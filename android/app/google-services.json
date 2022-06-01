@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "13037745725",
+    "project_id": "fyp-doorbell-cb008385",
+    "storage_bucket": "fyp-doorbell-cb008385.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:13037745725:android:c3c6fa88481b633eeadc54",
+        "android_client_info": {
+          "package_name": "com.cb008385.flutter_doorbell"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "13037745725-uhp3f5qom4lhqsf287lfli2o8dirtf3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRWgem7IYyCzHgfxeIvphiDRY1D2YnoA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "13037745725-uhp3f5qom4lhqsf287lfli2o8dirtf3h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
