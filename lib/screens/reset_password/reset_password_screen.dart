@@ -9,6 +9,16 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+  List textfieldValues = [
+    "", //password
+    "", //confirmPassword
+  ];
+
+  String errorPassword = "";
+  String errorConfirmPassword = "";
+
+  final _passwordKey = GlobalKey<FormState>();
+  final _confirmPasswordKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,9 +65,46 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ],
               ),
               Column(
-                children: const <Widget>[
-                  InputField(label: "Password", hideText: true),
-                  InputField(label: "Confirm Password ", hideText: true),
+                children: <Widget>[
+                  inputField("Password", true, (password) {
+                    if (password.length < 8) {
+                      setState(() {
+                        errorPassword =
+                            "Password should consist of at least 8 characters";
+                      });
+                      return '';
+                    }
+                    setState(() {
+                      errorPassword = '';
+                    });
+                    return null;
+                  }, _passwordKey, 0),
+                  Text(
+                    errorPassword != "" ? errorPassword : "",
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  inputField("Confirm Password", true, (cPassword) {
+                    if (cPassword != textfieldValues[2]) {
+                      setState(() {
+                        errorConfirmPassword = "Passwords do not match";
+                      });
+                      return '';
+                    }
+                    setState(() {
+                      errorConfirmPassword = '';
+                    });
+                    return null;
+                  }, _confirmPasswordKey, 1),
+                  Text(
+                    errorConfirmPassword != "" ? errorConfirmPassword : "",
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                 ],
               ),
               Container(
@@ -93,6 +140,43 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget inputField(
+      label, obscureText, FormFieldValidator validator, Key key, int position) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: const TextStyle(
+              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        Form(
+          key: key,
+          child: TextFormField(
+            onChanged: ((value) {
+              setState(() {
+                textfieldValues[position] = value;
+              });
+            }),
+            obscureText: obscureText,
+            validator: validator,
+            decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.shade400))),
+          ),
+        ),
+      ],
     );
   }
 }

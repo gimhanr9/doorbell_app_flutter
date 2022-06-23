@@ -1,9 +1,28 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/screens/register/register_screen.dart';
 import 'package:flutter_doorbell/widgets/login/input_field.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  List textfieldValues = [
+    "", //email
+    "", //password
+  ];
+
+  String errorEmail = "";
+  String errorPassword = "";
+
+  final _emailKey = GlobalKey<FormState>();
+  final _passwordKey = GlobalKey<FormState>();
+
+  bool isEmail(String input) => EmailValidator.validate(input);
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +72,45 @@ class LoginScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: Column(
-                    children: const <Widget>[
-                      InputField(label: "Email"),
-                      InputField(label: "Password", hideText: true)
+                    children: <Widget>[
+                      inputField("Email", false, (email) {
+                        if (!isEmail(email)) {
+                          setState(() {
+                            errorEmail = "Please enter a valid email";
+                          });
+                          return '';
+                        }
+                        setState(() {
+                          errorEmail = '';
+                        });
+                        return null;
+                      }, _emailKey, 0),
+                      Text(
+                        errorEmail != "" ? errorEmail : "",
+                        style: const TextStyle(fontSize: 12, color: Colors.red),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      inputField("Password", true, (password) {
+                        if (password.length == 0) {
+                          setState(() {
+                            errorPassword = "Please enter the password";
+                          });
+                          return '';
+                        }
+                        setState(() {
+                          errorPassword = '';
+                        });
+                        return null;
+                      }, _passwordKey, 1),
+                      Text(
+                        errorPassword != "" ? errorPassword : "",
+                        style: const TextStyle(fontSize: 12, color: Colors.red),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
                     ],
                   ),
                 ),
@@ -117,7 +172,7 @@ class LoginScreen extends StatelessWidget {
                   height: 200,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                        image: AssetImage("assets/background.png"),
+                        image: AssetImage("assets/login.png"),
                         fit: BoxFit.fitHeight),
                   ),
                 )
@@ -128,34 +183,41 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-// Widget inputFile({label, obscureText = false}) {
-//   return Column(
-//     crossAxisAlignment: CrossAxisAlignment.start,
-//     children: <Widget>[
-//       Text(
-//         label,
-//         style: const TextStyle(
-//             fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
-//       ),
-//       const SizedBox(
-//         height: 5,
-//       ),
-//       TextField(
-//         obscureText: obscureText,
-//         decoration: InputDecoration(
-//             contentPadding:
-//                 const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-//             enabledBorder: OutlineInputBorder(
-//               borderSide: BorderSide(color: Colors.grey.shade400),
-//             ),
-//             border: OutlineInputBorder(
-//                 borderSide: BorderSide(color: Colors.grey.shade400))),
-//       ),
-//       const SizedBox(
-//         height: 10,
-//       )
-//     ],
-//   );
-// }
+  Widget inputField(
+      label, obscureText, FormFieldValidator validator, Key key, int position) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: const TextStyle(
+              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        Form(
+          key: key,
+          child: TextFormField(
+            onChanged: ((value) {
+              setState(() {
+                textfieldValues[position] = value;
+              });
+            }),
+            obscureText: obscureText,
+            validator: validator,
+            decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.shade400))),
+          ),
+        ),
+      ],
+    );
+  }
+}

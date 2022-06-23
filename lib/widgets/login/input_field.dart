@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 class InputField extends StatefulWidget {
   final label;
   final hideText;
-  const InputField({Key? key, required this.label, this.hideText = false})
+  final errorText;
+  const InputField(
+      {Key? key, required this.label, this.hideText = false, this.errorText})
       : super(key: key);
 
   @override
@@ -34,6 +36,10 @@ class _InputFieldState extends State<InputField> {
               ),
               border: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey.shade400))),
+        ),
+        Text(
+          widget.errorText,
+          style: const TextStyle(fontSize: 12, color: Colors.red),
         ),
         const SizedBox(
           height: 10,

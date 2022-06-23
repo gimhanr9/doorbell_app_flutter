@@ -1,9 +1,33 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
-import 'package:flutter_doorbell/widgets/login/input_field.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  List textfieldValues = [
+    "", //name
+    "", //email
+    "", //password
+    "", //confirmPassword
+  ];
+
+  String errorEmail = "";
+  String errorName = "";
+  String errorPassword = "";
+  String errorConfirmPassword = "";
+
+  final _namekey = GlobalKey<FormState>();
+  final _emailKey = GlobalKey<FormState>();
+  final _passwordKey = GlobalKey<FormState>();
+  final _confirmPasswordKey = GlobalKey<FormState>();
+
+  bool isEmail(String input) => EmailValidator.validate(input);
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +75,84 @@ class RegisterScreen extends StatelessWidget {
                 ],
               ),
               Column(
-                children: const <Widget>[
-                  InputField(label: "Name"),
-                  InputField(label: "Email"),
-                  InputField(label: "Password", hideText: true),
-                  InputField(label: "Confirm Password ", hideText: true),
+                children: <Widget>[
+                  inputField("Name", false, (name) {
+                    if (name.length == 0) {
+                      setState(() {
+                        errorName = "Please enter a valid name";
+                      });
+                      return '';
+                    }
+                    setState(() {
+                      errorName = '';
+                    });
+                    return null;
+                  }, _namekey, 0),
+                  Text(
+                    errorName != "" ? errorName : "",
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  inputField("Email", false, (email) {
+                    if (!isEmail(email)) {
+                      setState(() {
+                        errorEmail = "Please enter a valid email";
+                      });
+                      return '';
+                    }
+                    setState(() {
+                      errorEmail = '';
+                    });
+                    return null;
+                  }, _emailKey, 1),
+                  Text(
+                    errorEmail != "" ? errorEmail : "",
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  inputField("Password", true, (password) {
+                    if (password.length < 8) {
+                      setState(() {
+                        errorPassword =
+                            "Password should consist of at least 8 characters";
+                      });
+                      return '';
+                    }
+                    setState(() {
+                      errorPassword = '';
+                    });
+                    return null;
+                  }, _passwordKey, 2),
+                  Text(
+                    errorPassword != "" ? errorPassword : "",
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  inputField("Confirm Password", true, (cPassword) {
+                    if (cPassword != textfieldValues[2]) {
+                      setState(() {
+                        errorConfirmPassword = "Passwords do not match";
+                      });
+                      return '';
+                    }
+                    setState(() {
+                      errorConfirmPassword = '';
+                    });
+                    return null;
+                  }, _confirmPasswordKey, 3),
+                  Text(
+                    errorConfirmPassword != "" ? errorConfirmPassword : "",
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                 ],
               ),
               Container(
@@ -109,6 +206,43 @@ class RegisterScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget inputField(
+      label, obscureText, FormFieldValidator validator, Key key, int position) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: const TextStyle(
+              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+        ),
+        const SizedBox(
+          height: 5,
+        ),
+        Form(
+          key: key,
+          child: TextFormField(
+            onChanged: ((value) {
+              setState(() {
+                textfieldValues[position] = value;
+              });
+            }),
+            obscureText: obscureText,
+            validator: validator,
+            decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.shade400))),
+          ),
+        ),
+      ],
     );
   }
 }
