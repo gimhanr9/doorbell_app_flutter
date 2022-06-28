@@ -48,6 +48,7 @@ dependencies:
   jwt_decoder: ^2.0.1
   flutter_dotenv: ^5.0.2
   pin_code_fields: ^7.4.0
+  email_validator: ^2.0.1
 
 dev_dependencies:
   flutter_test:
