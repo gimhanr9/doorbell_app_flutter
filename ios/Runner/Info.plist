@@ -42,8 +42,15 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-<string>$(PRODUCT_NAME) Camera Usage!</string>
-<key>NSMicrophoneUsageDescription</key>
-<string>$(PRODUCT_NAME) Microphone Usage!</string>
+    <string>$(PRODUCT_NAME) Camera Usage!</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Upload images for screen background</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>$(PRODUCT_NAME) Microphone Usage!</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
 </dict>
 </plist>
