@@ -1,5 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/screens/home/home_screen.dart';
 import 'package:flutter_doorbell/screens/register/register_screen.dart';
 import 'package:flutter_doorbell/widgets/login/input_field.dart';
 
@@ -129,7 +130,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: MaterialButton(
                       minWidth: double.infinity,
                       height: 60,
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) => const HomeScreen(),
+                        ));
+                      },
                       color: const Color(0xff0095FF),
                       elevation: 0,
                       shape: RoundedRectangleBorder(

@@ -39,7 +39,6 @@ dependencies:
   flutter_webrtc_wrapper: ^1.0.1
   flutter_webrtc: ^0.8.7
   change_app_package_name: ^1.0.0
-  jitsi_meet: ^4.0.0
   http: ^0.13.4
   video_player: ^2.4.0
   auto_orientation: ^2.2.1
