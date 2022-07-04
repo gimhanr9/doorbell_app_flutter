@@ -127,20 +127,6 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
               ),
             ],
           ),
-          if (Platform.isAndroid)
-            ListTile(
-              title: const Text("Delay"),
-              subtitle: DelaySlider(
-                delay:
-                    _chewieController?.progressIndicatorDelay?.inMilliseconds,
-                onSave: (delay) async {
-                  if (delay != null) {
-                    bufferDelay = delay == 0 ? null : delay;
-                    await initializePlayer();
-                  }
-                },
-              ),
-            )
         ],
       ),
     );

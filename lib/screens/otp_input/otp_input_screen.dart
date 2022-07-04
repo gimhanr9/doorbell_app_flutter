@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
+import 'package:flutter_doorbell/screens/reset_password/reset_password_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OTPInputScreen extends StatefulWidget {
@@ -99,7 +100,15 @@ class _OTPInputScreenState extends State<OTPInputScreen> {
                 child: MaterialButton(
                   minWidth: double.infinity,
                   height: 60,
-                  onPressed: !enableContinue ? null : (() {}),
+                  onPressed: !enableContinue
+                      ? null
+                      : (() {
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const ResetPasswordScreen(),
+                          ));
+                        }),
                   color: const Color(0xff0095FF),
                   elevation: 0,
                   shape: RoundedRectangleBorder(

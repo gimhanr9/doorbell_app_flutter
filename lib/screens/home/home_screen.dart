@@ -32,135 +32,136 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Home'),
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        title: const Text('Home'),
+        backgroundColor: Colors.white,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Color(0xff764abc)),
+              accountName: Text(
+                "Gimhan",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              accountEmail: Text(
+                "gimhanr9@gmail.com",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              currentAccountPicture: FlutterLogo(),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.home_rounded,
+              ),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.person_rounded,
+              ),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) => const ProfileScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.cell_tower_rounded,
+              ),
+              title: const Text('Live'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) =>
+                        const LiveStreamingScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.ondemand_video_rounded,
+              ),
+              title: const Text('Recordings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) =>
+                        const RecordingListScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.logout_rounded,
+              ),
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                //     builder: (BuildContext context) =>
+                //         const LoginScreen()));
+              },
+            ),
+          ],
         ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Color(0xff764abc)),
-                accountName: Text(
-                  "Gimhan",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+      ),
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      const Text(
+                        "Hi Gimhan,",
+                        style: TextStyle(
+                            fontSize: 30, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      const Text(
+                        "You've had 27 visits",
+                        style: TextStyle(fontSize: 18, color: Colors.black),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Container(
+                        child: ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          itemCount: activities.length,
+                          itemBuilder: (context, index) {
+                            return makeCard(activities[index]);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                accountEmail: Text(
-                  "gimhanr9@gmail.com",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                currentAccountPicture: FlutterLogo(),
+                ],
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.home_rounded,
-                ),
-                title: const Text('Home'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.person_rounded,
-                ),
-                title: const Text('Profile'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          const ProfileScreen()));
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.cell_tower_rounded,
-                ),
-                title: const Text('Live'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          const LiveStreamingScreen()));
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.ondemand_video_rounded,
-                ),
-                title: const Text('Recordings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          const RecordingListScreen()));
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout_rounded,
-                ),
-                title: const Text('Logout'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  //     builder: (BuildContext context) =>
-                  //         const LoginScreen()));
-                },
-              ),
-            ],
-          ),
-        ),
-        body: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Column(
-                      children: <Widget>[
-                        const Text(
-                          "Hi Gimhan,",
-                          style: TextStyle(
-                              fontSize: 30, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(
-                          height: 8,
-                        ),
-                        const Text(
-                          "You've had 27 visits",
-                          style: TextStyle(fontSize: 18, color: Colors.black),
-                        ),
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Container(
-                          child: ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            shrinkWrap: true,
-                            itemCount: activities.length,
-                            itemBuilder: (context, index) {
-                              return makeCard(activities[index]);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -195,15 +196,11 @@ class _HomeScreenState extends State<HomeScreen> {
   ListTile makeListCard(ActivityLog activityLog) => ListTile(
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-        leading: Container(
-          padding: const EdgeInsets.only(right: 12.0),
-          decoration: const BoxDecoration(
-              border:
-                  Border(right: BorderSide(width: 1.0, color: Colors.white24))),
+        leading: SizedBox(
+          height: 30,
+          width: 30,
           child: Image.network(
             'https://img.icons8.com/fluency/344/image.png',
-            height: 30,
-            width: 30,
             fit: BoxFit.cover,
           ),
         ),

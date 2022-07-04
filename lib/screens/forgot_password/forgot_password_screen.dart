@@ -1,5 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/screens/otp_input/otp_input_screen.dart';
 import 'package:flutter_doorbell/widgets/login/input_field.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -100,14 +101,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: MaterialButton(
                   minWidth: double.infinity,
                   height: 60,
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (BuildContext context) => const OTPInputScreen(),
+                    ));
+                  },
                   color: const Color(0xff0095FF),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: const Text(
-                    "Send email",
+                    "Send OTP",
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 18,

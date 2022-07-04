@@ -1,8 +1,8 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/screens/forgot_password/forgot_password_screen.dart';
 import 'package:flutter_doorbell/screens/home/home_screen.dart';
 import 'package:flutter_doorbell/screens/register/register_screen.dart';
-import 'package:flutter_doorbell/widgets/login/input_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -44,146 +44,182 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-                child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Column(
-                  children: <Widget>[
-                    const Text(
-                      "Login",
-                      style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      "Login to your account",
-                      style: TextStyle(fontSize: 15, color: Colors.grey[700]),
-                    )
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Expanded(
                   child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Column(
                     children: <Widget>[
-                      inputField("Email", false, (email) {
-                        if (!isEmail(email)) {
-                          setState(() {
-                            errorEmail = "Please enter a valid email";
-                          });
-                          return '';
-                        }
-                        setState(() {
-                          errorEmail = '';
-                        });
-                        return null;
-                      }, _emailKey, 0),
-                      Text(
-                        errorEmail != "" ? errorEmail : "",
-                        style: const TextStyle(fontSize: 12, color: Colors.red),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      inputField("Password", true, (password) {
-                        if (password.length == 0) {
-                          setState(() {
-                            errorPassword = "Please enter the password";
-                          });
-                          return '';
-                        }
-                        setState(() {
-                          errorPassword = '';
-                        });
-                        return null;
-                      }, _passwordKey, 1),
-                      Text(
-                        errorPassword != "" ? errorPassword : "",
-                        style: const TextStyle(fontSize: 12, color: Colors.red),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 3, left: 3),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        border: const Border(
-                          bottom: BorderSide(color: Colors.black),
-                          top: BorderSide(color: Colors.black),
-                          left: BorderSide(color: Colors.black),
-                          right: BorderSide(color: Colors.black),
-                        )),
-                    child: MaterialButton(
-                      minWidth: double.infinity,
-                      height: 60,
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (BuildContext context) => const HomeScreen(),
-                        ));
-                      },
-                      color: const Color(0xff0095FF),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: const Text(
+                      const Text(
                         "Login",
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          color: Colors.white,
+                            fontSize: 30, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        "Login to your account",
+                        style: TextStyle(fontSize: 15, color: Colors.grey[700]),
+                      )
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
+                      children: <Widget>[
+                        inputField("Email", false, (email) {
+                          if (!isEmail(email)) {
+                            setState(() {
+                              errorEmail = "Please enter a valid email";
+                            });
+                            return '';
+                          }
+                          setState(() {
+                            errorEmail = '';
+                          });
+                          return null;
+                        }, _emailKey, 0),
+                        Text(
+                          errorEmail != "" ? errorEmail : "",
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.red),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        inputField("Password", true, (password) {
+                          if (password.length == 0) {
+                            setState(() {
+                              errorPassword = "Please enter the password";
+                            });
+                            return '';
+                          }
+                          setState(() {
+                            errorPassword = '';
+                          });
+                          return null;
+                        }, _passwordKey, 1),
+                        Text(
+                          errorPassword != "" ? errorPassword : "",
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.red),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 3, left: 3),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          border: const Border(
+                            bottom: BorderSide(color: Colors.black),
+                            top: BorderSide(color: Colors.black),
+                            left: BorderSide(color: Colors.black),
+                            right: BorderSide(color: Colors.black),
+                          )),
+                      child: MaterialButton(
+                        minWidth: double.infinity,
+                        height: 60,
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const HomeScreen(),
+                          ));
+                        },
+                        color: const Color(0xff0095FF),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: const Text(
+                          "Login",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text("Don't have an account?"),
-                    GestureDetector(
-                        onTap: () {
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 3, left: 3),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          border: const Border(
+                            bottom: BorderSide(color: Colors.black),
+                            top: BorderSide(color: Colors.black),
+                            left: BorderSide(color: Colors.black),
+                            right: BorderSide(color: Colors.black),
+                          )),
+                      child: TextButton(
+                        onPressed: () {
                           Navigator.of(context)
                               .pushReplacement(MaterialPageRoute(
                             builder: (BuildContext context) =>
-                                const RegisterScreen(),
+                                const ForgotPasswordScreen(),
                           ));
                         },
                         child: const Text(
-                          " Sign up",
+                          "Forgot Password",
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
                             fontSize: 18,
+                            color: Colors.blue,
                           ),
-                        ))
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.only(top: 100),
-                  height: 200,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                        image: AssetImage("assets/login.png"),
-                        fit: BoxFit.fitHeight),
+                        ),
+                      ),
+                    ),
                   ),
-                )
-              ],
-            ))
-          ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const Text("Don't have an account?"),
+                      GestureDetector(
+                          onTap: () {
+                            Navigator.of(context)
+                                .pushReplacement(MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  const RegisterScreen(),
+                            ));
+                          },
+                          child: const Text(
+                            " Sign up",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ))
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.only(top: 100),
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage("assets/images/login.png"),
+                          fit: BoxFit.fitHeight),
+                    ),
+                  )
+                ],
+              ))
+            ],
+          ),
         ),
       ),
     );
