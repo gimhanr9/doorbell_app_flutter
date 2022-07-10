@@ -44,7 +44,8 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen> {
   void startMeeting() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     final token;
-    if (preferences.containsKey("userToken")) {
+    if (!preferences.containsKey("userToken")) {
+      //TODO: remove not operator in if condition
       token = preferences.getString("userToken");
       bool isTokenExpired = JwtDecoder.isExpired(token);
       if (!isTokenExpired) {
@@ -179,6 +180,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen> {
                   padding: EdgeInsets.all(10),
                   child: Text(
                     "Waiting for doorbell connection...",
+                    textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey, fontSize: 24),
                   ),
                 ),

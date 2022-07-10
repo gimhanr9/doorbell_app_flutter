@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_doorbell/widgets/video_recording/delay_slider.dart';
+import 'package:flutter_doorbell/utils/color_file.dart';
 import 'package:video_player/video_player.dart';
 
 class RecordingPlayer extends StatefulWidget {
@@ -66,11 +66,10 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Video Player"),
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: ColorFile.header,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -78,7 +77,7 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
           icon: const Icon(
             Icons.arrow_back_ios,
             size: 20,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
       ),
@@ -127,20 +126,6 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
               ),
             ],
           ),
-          if (Platform.isAndroid)
-            ListTile(
-              title: const Text("Delay"),
-              subtitle: DelaySlider(
-                delay:
-                    _chewieController?.progressIndicatorDelay?.inMilliseconds,
-                onSave: (delay) async {
-                  if (delay != null) {
-                    bufferDelay = delay == 0 ? null : delay;
-                    await initializePlayer();
-                  }
-                },
-              ),
-            )
         ],
       ),
     );
