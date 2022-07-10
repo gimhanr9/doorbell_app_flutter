@@ -180,6 +180,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen> {
                   padding: EdgeInsets.all(10),
                   child: Text(
                     "Waiting for doorbell connection...",
+                    textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey, fontSize: 24),
                   ),
                 ),

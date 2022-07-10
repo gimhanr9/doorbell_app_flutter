@@ -1,14 +1,14 @@
 import 'dart:convert';
 
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/api/meeting_api.dart';
 import 'package:flutter_doorbell/models/activity_log.dart';
 import 'package:flutter_doorbell/models/meeting_details.dart';
 import 'package:flutter_doorbell/screens/live_streaming/live_streaming_screen.dart';
-import 'package:flutter_doorbell/screens/login/login_screen.dart';
+import 'package:flutter_doorbell/screens/profile/add_visitor_screen.dart';
 import 'package:flutter_doorbell/screens/profile/profile_screen.dart';
 import 'package:flutter_doorbell/screens/video_recording/recording_list_screen.dart';
+import 'package:flutter_doorbell/utils/color_file.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -34,11 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 0,
+        elevation: 1,
         title: const Text('Home'),
-        backgroundColor: Colors.white,
+        backgroundColor: ColorFile.header,
       ),
       drawer: Drawer(
         child: ListView(
@@ -77,7 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => const ProfileScreen()));
+                    builder: (BuildContext context) =>
+                        const AddVisitorScreen()));
               },
             ),
             ListTile(
@@ -123,43 +123,34 @@ class _HomeScreenState extends State<HomeScreen> {
         height: MediaQuery.of(context).size.height,
         width: double.infinity,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      const Text(
-                        "Hi Gimhan,",
-                        style: TextStyle(
-                            fontSize: 30, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      const Text(
-                        "You've had 27 visits",
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Container(
-                        child: ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          itemCount: activities.length,
-                          itemBuilder: (context, index) {
-                            return makeCard(activities[index]);
-                          },
-                        ),
-                      ),
-                    ],
+            Column(
+              children: <Widget>[
+                const Text(
+                  "Hi Gimhan,",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                const Text(
+                  "You've had 27 visits",
+                  style: TextStyle(fontSize: 18, color: Colors.black),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Container(
+                  child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: activities.length,
+                    itemBuilder: (context, index) {
+                      return makeCard(activities[index]);
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -184,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Card makeCard(ActivityLog activityLog) => Card(
-        elevation: 8.0,
+        elevation: 1.0,
         margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
         child: Container(
           decoration:
@@ -199,9 +190,14 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: SizedBox(
           height: 30,
           width: 30,
-          child: Image.network(
-            'https://img.icons8.com/fluency/344/image.png',
-            fit: BoxFit.cover,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image.network(
+                'https://img.icons8.com/fluency/344/image.png',
+                fit: BoxFit.cover,
+              ),
+            ],
           ),
         ),
         title: Text(
@@ -216,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               flex: 4,
               child: Padding(
-                  padding: const EdgeInsets.only(left: 10.0),
+                  padding: const EdgeInsets.only(left: 0.0),
                   child: Text(activityLog.date,
                       style: const TextStyle(color: Colors.black))),
             )

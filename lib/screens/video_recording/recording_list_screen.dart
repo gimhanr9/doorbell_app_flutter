@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/models/recording.dart';
 import 'package:flutter_doorbell/screens/video_recording/recording_player.dart';
+import 'package:flutter_doorbell/utils/color_file.dart';
 
 class RecordingListScreen extends StatefulWidget {
   const RecordingListScreen({Key? key}) : super(key: key);
@@ -21,11 +22,10 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 0,
+        elevation: 1,
         title: const Text("Recordings"),
-        backgroundColor: Colors.white,
+        backgroundColor: ColorFile.header,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -33,7 +33,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
           icon: const Icon(
             Icons.arrow_back_ios,
             size: 20,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
       ),
@@ -51,7 +51,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
   }
 
   Card makeCard(Recording recording) => Card(
-        elevation: 8.0,
+        elevation: 1.0,
         margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
         child: Container(
           decoration:
@@ -68,7 +68,12 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
           decoration: const BoxDecoration(
               border:
                   Border(right: BorderSide(width: 1.0, color: Colors.white24))),
-          child: const Icon(Icons.play_arrow_rounded, color: Colors.black),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.play_arrow_rounded, color: Colors.black),
+            ],
+          ),
         ),
         title: Text(
           recording.name,
@@ -82,7 +87,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
             Expanded(
               flex: 4,
               child: Padding(
-                  padding: const EdgeInsets.only(left: 10.0),
+                  padding: const EdgeInsets.only(left: 0.0),
                   child: Text(recording.date,
                       style: const TextStyle(color: Colors.black))),
             )
@@ -105,7 +110,7 @@ List getLessons() {
     Recording(
       name: "Sample Video",
       date: "29/06/2022",
-      url: "",
+      url: "https://www.youtube.com/watch?v=tXVNS-V39A0",
     )
   ];
 }

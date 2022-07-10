@@ -13,7 +13,7 @@ class OTPInputScreen extends StatefulWidget {
 class _OTPInputScreenState extends State<OTPInputScreen> {
   TextEditingController textEditingController = TextEditingController();
   String otpInput = "";
-  bool enableContinue = false;
+  bool enableContinue = true; //TODO:make this false
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,16 +22,6 @@ class _OTPInputScreenState extends State<OTPInputScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            size: 20,
-            color: Colors.black,
-          ),
-        ),
       ),
       body: SingleChildScrollView(
         child: Container(

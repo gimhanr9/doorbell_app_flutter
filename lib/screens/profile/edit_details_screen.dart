@@ -1,5 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/utils/color_file.dart';
 
 class EditDetailsScreen extends StatefulWidget {
   final String? name;
@@ -28,11 +29,10 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         title: const Text("Profile"),
-        backgroundColor: Colors.white,
+        backgroundColor: ColorFile.header,
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -40,7 +40,7 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
           icon: const Icon(
             Icons.arrow_back_ios,
             size: 20,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_doorbell/screens/profile/selection_dialog.dart';
+import 'package:flutter_doorbell/utils/color_file.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddVisitorScreen extends StatefulWidget {
@@ -27,11 +28,10 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
           elevation: 0,
           title: const Text("Profile"),
-          backgroundColor: Colors.white,
+          backgroundColor: ColorFile.header,
           leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
@@ -39,7 +39,7 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
             icon: const Icon(
               Icons.arrow_back_ios,
               size: 20,
-              color: Colors.black,
+              color: Colors.white,
             ),
           ),
         ),

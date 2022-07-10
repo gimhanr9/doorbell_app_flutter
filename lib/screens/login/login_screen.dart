@@ -33,16 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            size: 20,
-            color: Colors.black,
-          ),
-        ),
       ),
       body: SingleChildScrollView(
         child: SizedBox(
@@ -159,15 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Container(
-                      padding: const EdgeInsets.only(top: 3, left: 3),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
-                          border: const Border(
-                            bottom: BorderSide(color: Colors.black),
-                            top: BorderSide(color: Colors.black),
-                            left: BorderSide(color: Colors.black),
-                            right: BorderSide(color: Colors.black),
-                          )),
+                      padding: const EdgeInsets.only(top: 10, left: 3),
                       child: TextButton(
                         onPressed: () {
                           Navigator.of(context)
@@ -180,32 +162,39 @@ class _LoginScreenState extends State<LoginScreen> {
                           "Forgot Password",
                           style: TextStyle(
                             fontSize: 18,
-                            color: Colors.blue,
+                            color: Colors.black,
                           ),
                         ),
                       ),
                     ),
+                  ),
+                  const SizedBox(
+                    height: 10,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       const Text("Don't have an account?"),
                       GestureDetector(
-                          onTap: () {
-                            Navigator.of(context)
-                                .pushReplacement(MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                  const RegisterScreen(),
-                            ));
-                          },
-                          child: const Text(
-                            " Sign up",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ))
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const RegisterScreen(),
+                          ));
+                        },
+                        child: const Text(
+                          " Sign up",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
+                        ),
+                      )
                     ],
+                  ),
+                  const SizedBox(
+                    height: 10,
                   ),
                   Container(
                     padding: const EdgeInsets.only(top: 100),
