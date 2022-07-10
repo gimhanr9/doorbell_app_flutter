@@ -37,16 +37,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            size: 20,
-            color: Colors.black,
-          ),
-        ),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -198,9 +188,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: const Text(
                         " Login",
                         style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 18),
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red,
+                            fontSize: 16),
                       ))
                 ],
+              ),
+              const SizedBox(
+                height: 10,
               )
             ],
           ),

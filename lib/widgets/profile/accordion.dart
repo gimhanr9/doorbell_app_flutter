@@ -5,9 +5,8 @@ import 'package:flutter_doorbell/screens/profile/edit_details_screen.dart';
 
 class Accordion extends StatefulWidget {
   final String title;
-  final User? user;
   final List? visitors;
-  const Accordion({Key? key, required this.title, this.user, this.visitors})
+  const Accordion({Key? key, required this.title, this.visitors})
       : super(key: key);
 
   @override
@@ -16,6 +15,7 @@ class Accordion extends StatefulWidget {
 
 class _AccordionState extends State<Accordion> {
   bool _showContent = false;
+  final User user = User(name: "Gimhan", email: "gimhanr9@gmail.com");
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -37,7 +37,7 @@ class _AccordionState extends State<Accordion> {
             ? Container(
                 padding:
                     const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                child: widget.user != null
+                child: user != null
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
@@ -50,11 +50,11 @@ class _AccordionState extends State<Accordion> {
                                     const EdgeInsets.symmetric(horizontal: 40),
                                 child: Column(
                                   children: <Widget>[
-                                    inputField("Email", widget.user?.email),
+                                    inputField("Email", user.email),
                                     const SizedBox(
                                       height: 10,
                                     ),
-                                    inputField("Name", widget.user?.name),
+                                    inputField("Name", user.name),
                                     const SizedBox(
                                       height: 10,
                                     ),
@@ -84,8 +84,8 @@ class _AccordionState extends State<Accordion> {
                                         MaterialPageRoute(
                                             builder: (context) =>
                                                 EditDetailsScreen(
-                                                    email: widget.user!.email,
-                                                    name: widget.user!.name)),
+                                                    email: user.email,
+                                                    name: user.name)),
                                       );
                                     },
                                     color: const Color(0xff0095FF),
