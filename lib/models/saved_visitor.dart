@@ -1,5 +1,5 @@
 class SavedVisitor {
-  String id;
+  String? id;
   String fname;
   String lname;
   String imageUrl;

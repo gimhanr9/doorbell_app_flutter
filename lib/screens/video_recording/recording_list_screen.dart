@@ -108,6 +108,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
 List getLessons() {
   return [
     Recording(
+      id: "1",
       name: "Sample Video",
       date: "29/06/2022",
       url: "https://www.youtube.com/watch?v=tXVNS-V39A0",
