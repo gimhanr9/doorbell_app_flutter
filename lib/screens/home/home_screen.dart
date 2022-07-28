@@ -126,6 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             Column(
               children: <Widget>[
+                const SizedBox(
+                  height: 8,
+                ),
                 const Text(
                   "Hi Gimhan,",
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),

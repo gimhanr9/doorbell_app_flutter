@@ -145,6 +145,41 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
                   const SizedBox(
                     height: 10,
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 3, left: 3),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          border: const Border(
+                            bottom: BorderSide(color: Colors.black),
+                            top: BorderSide(color: Colors.black),
+                            left: BorderSide(color: Colors.black),
+                            right: BorderSide(color: Colors.black),
+                          )),
+                      child: MaterialButton(
+                        minWidth: double.infinity,
+                        height: 60,
+                        onPressed: () {},
+                        color: const Color(0xff0095FF),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: const Text(
+                          "Add Visitor",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                 ],
               ),
             ],
