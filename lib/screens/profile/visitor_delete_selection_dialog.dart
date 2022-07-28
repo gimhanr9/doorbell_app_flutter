@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 
-class SelectionDialog extends StatefulWidget {
+class VisitorDeleteSelectionDialog extends StatefulWidget {
   final Function() selectCamera;
   final Function() selectGallery;
-  const SelectionDialog(
-      {Key? key, required this.selectCamera, required this.selectGallery})
+  final String visitorName;
+  const VisitorDeleteSelectionDialog(
+      {Key? key,
+      required this.selectCamera,
+      required this.selectGallery,
+      required this.visitorName})
       : super(key: key);
 
   @override
-  State<SelectionDialog> createState() => _SelectionDialogState();
+  State<VisitorDeleteSelectionDialog> createState() =>
+      _VisitorDeleteSelectionDialogState();
 }
 
-class _SelectionDialogState extends State<SelectionDialog> {
+class _VisitorDeleteSelectionDialogState
+    extends State<VisitorDeleteSelectionDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -25,16 +31,16 @@ class _SelectionDialogState extends State<SelectionDialog> {
         children: [
           const SizedBox(height: 15),
           const Text(
-            "Pick image from...",
+            "Delete image",
             style: TextStyle(
               fontSize: 18.0,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 15),
-          const Padding(
-              padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-              child: Text("Select where you want to pick the image from")),
+          Padding(
+              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+              child: Text('Confirm deletion of ${widget.visitorName}')),
           const SizedBox(height: 20),
           const Divider(
             height: 1,
@@ -50,7 +56,7 @@ class _SelectionDialogState extends State<SelectionDialog> {
               },
               child: Center(
                 child: Text(
-                  "Camera",
+                  "Confirm",
                   style: TextStyle(
                     fontSize: 18.0,
                     color: Theme.of(context).primaryColor,
@@ -74,37 +80,11 @@ class _SelectionDialogState extends State<SelectionDialog> {
               },
               child: Center(
                 child: Text(
-                  "Gallery",
+                  "Cancel",
                   style: TextStyle(
                     fontSize: 18.0,
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const Divider(
-            height: 1,
-          ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: 50,
-            child: InkWell(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(15.0),
-                bottomRight: Radius.circular(15.0),
-              ),
-              highlightColor: Colors.grey[200],
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: const Center(
-                child: Text(
-                  "Cancel",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.normal,
                   ),
                 ),
               ),
