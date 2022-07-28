@@ -35,7 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        child: SizedBox(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
           height: MediaQuery.of(context).size.height,
           width: double.infinity,
           child: Column(
