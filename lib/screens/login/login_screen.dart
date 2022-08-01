@@ -1,8 +1,16 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/auth_api.dart';
 import 'package:flutter_doorbell/screens/forgot_password/forgot_password_screen.dart';
 import 'package:flutter_doorbell/screens/home/home_screen.dart';
 import 'package:flutter_doorbell/screens/register/register_screen.dart';
+import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
+import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+bool isAnimating = true;
+
+enum ButtonState { init, submitting, completed }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -12,6 +20,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthApiClient authApiClient = AuthApiClient();
+  ButtonState state = ButtonState.init;
   List textfieldValues = [
     "", //email
     "", //password
@@ -23,10 +33,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailKey = GlobalKey<FormState>();
   final _passwordKey = GlobalKey<FormState>();
 
+  bool isLoading = false;
   bool isEmail(String input) => EmailValidator.validate(input);
 
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = MediaQuery.of(context).size.width;
+    final isInit = isAnimating || state == ButtonState.init;
+    final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
@@ -35,8 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: SizedBox(
           height: MediaQuery.of(context).size.height,
           width: double.infinity,
           child: Column(
@@ -111,50 +124,31 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 3, left: 3),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
-                          border: const Border(
-                            bottom: BorderSide(color: Colors.black),
-                            top: BorderSide(color: Colors.black),
-                            left: BorderSide(color: Colors.black),
-                            right: BorderSide(color: Colors.black),
-                          )),
-                      child: MaterialButton(
-                        minWidth: double.infinity,
+                    child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        onEnd: () => setState(() {
+                              isAnimating = !isAnimating;
+                            }),
+                        width: state == ButtonState.init ? buttonWidth : 70,
                         height: 60,
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                const HomeScreen(),
-                          ));
-                        },
-                        color: const Color(0xff0095FF),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
+                        child: isInit
+                            ? CustomRoundedButton(
+                                text: 'Login',
+                                onPressed: () {
+                                  handleLogin();
+                                },
+                              )
+                            : CustomCircularProgress(
+                                done: isDone,
+                              )),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Container(
-                      padding: const EdgeInsets.only(top: 10, left: 3),
+                      padding: const EdgeInsets.only(left: 3),
                       child: TextButton(
                         onPressed: () {
-                          Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(
+                          Navigator.of(context).push(MaterialPageRoute(
                             builder: (BuildContext context) =>
                                 const ForgotPasswordScreen(),
                           ));
@@ -162,15 +156,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text(
                           "Forgot Password",
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             color: Colors.black,
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 10,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -194,18 +185,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       )
                     ],
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.only(top: 100),
-                    height: 200,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage("assets/images/login.png"),
-                          fit: BoxFit.fitHeight),
-                    ),
-                  )
                 ],
               ))
             ],
@@ -213,6 +192,36 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> handleLogin() async {
+    if (_emailKey.currentState!.validate() &&
+        _passwordKey.currentState!.validate()) {
+      setState(() {
+        state = ButtonState.submitting;
+      });
+      dynamic res =
+          await authApiClient.login(textfieldValues[0], textfieldValues[1]);
+
+      if (res['error'] == null) {
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        preferences.setString('userToken', res['data']);
+        setState(() {
+          state = ButtonState.completed;
+        });
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => const HomeScreen(),
+        ));
+      } else {
+        setState(() {
+          state = ButtonState.init;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: ${res['message']}'),
+          backgroundColor: Colors.red.shade300,
+        ));
+      }
+    }
   }
 
   Widget inputField(

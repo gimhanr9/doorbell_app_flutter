@@ -1,68 +1,122 @@
 import 'dart:convert';
 
 import 'package:flutter_doorbell/models/user.dart';
+import 'package:flutter_doorbell/utils/network_exceptions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
-var client = http.Client();
+class AuthApiClient {
+  final Dio _dio = Dio();
 
-Future<http.Response?> login(User user) async {
-  Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+  Future login(String email, String password) async {
+    try {
+      Response response = await _dio.post(
+          '${dotenv.env['FLASK_API_URL']}/login',
+          options: Options(contentType: Headers.jsonContentType),
+          data: jsonEncode({'email': email, 'password': password}));
 
-  var response = await client.post(
-      Uri.parse('${dotenv.env['FLASK_API_URL']}/login'),
-      headers: requestHeaders,
-      body: jsonEncode({'email': user.email, 'password': user.password}));
+      Map<String, dynamic> map = json.decode(response.data);
 
-  if (response.statusCode == 200) {
-    return response;
-  } else {
-    return null;
+      return map;
+    } on DioError catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e).toString();
+
+      final Map<String, dynamic> mapError = {
+        'error': 'Request Failed',
+        'data': null,
+        'message': errorMessage
+      };
+      return mapError;
+    }
   }
-}
 
-Future<http.Response?> register(User user) async {
-  Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+  Future register(User user) async {
+    try {
+      Response response = await _dio.post(
+          '${dotenv.env['FLASK_API_URL']}/register',
+          options: Options(contentType: Headers.jsonContentType),
+          data: jsonEncode({
+            'email': user.email,
+            'name': user.name,
+            'password': user.password
+          }));
 
-  var response = await client.post(
-      Uri.parse('${dotenv.env['FLASK_API_URL']}/register'),
-      headers: requestHeaders,
-      body: jsonEncode(
-          {'email': user.email, 'name': user.name, 'password': user.password}));
+      Map<String, dynamic> map = json.decode(response.data);
 
-  if (response.statusCode == 200) {
-    return response;
-  } else {
-    return null;
+      return map;
+    } on DioError catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e).toString();
+
+      final Map<String, dynamic> mapError = {
+        'error': 'Request Failed',
+        'data': null,
+        'message': errorMessage
+      };
+      return mapError;
+    }
   }
-}
 
-Future<http.Response?> resetPassword(User user) async {
-  Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+  Future resetPassword(String email, String password) async {
+    try {
+      Response response = await _dio.post(
+          '${dotenv.env['FLASK_API_URL']}/resetpassword',
+          options: Options(contentType: Headers.jsonContentType),
+          data: jsonEncode({'email': email, 'password': password}));
 
-  var response = await client.post(
-      Uri.parse('${dotenv.env['FLASK_API_URL']}/resetPassword'),
-      headers: requestHeaders,
-      body: jsonEncode({'email': user.email}));
+      Map<String, dynamic> map = json.decode(response.data);
 
-  if (response.statusCode == 200) {
-    return response;
-  } else {
-    return null;
+      return map;
+    } on DioError catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e).toString();
+
+      final Map<String, dynamic> mapError = {
+        'error': 'Request Failed',
+        'data': null,
+        'message': errorMessage
+      };
+      return mapError;
+    }
   }
-}
 
-Future<http.Response?> checkOtp(User user) async {
-  Map<String, String> requestHeaders = {'Content-Type': 'application/json'};
+  Future checkOtp(String email, String otp) async {
+    try {
+      Response response = await _dio.post(
+          '${dotenv.env['FLASK_API_URL']}/checkotp',
+          options: Options(contentType: Headers.jsonContentType),
+          data: jsonEncode({'email': email, 'otp': otp}));
 
-  var response = await client.post(
-      Uri.parse('${dotenv.env['FLASK_API_URL']}/checkOtp'),
-      headers: requestHeaders,
-      body: jsonEncode({'otp': user.otp}));
+      Map<String, dynamic> map = json.decode(response.data);
+      return map;
+    } on DioError catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e).toString();
 
-  if (response.statusCode == 200) {
-    return response;
-  } else {
-    return null;
+      final Map<String, dynamic> mapError = {
+        'error': 'Request Failed',
+        'data': null,
+        'message': errorMessage
+      };
+      return mapError;
+    }
+  }
+
+  Future forgotPassword(String email) async {
+    try {
+      Response response = await _dio.post(
+          '${dotenv.env['FLASK_API_URL']}/forgotpassword',
+          options: Options(contentType: Headers.jsonContentType),
+          data: jsonEncode({'email': email}));
+
+      Map<String, dynamic> map = json.decode(response.data);
+      return map;
+    } on DioError catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e).toString();
+
+      final Map<String, dynamic> mapError = {
+        'error': 'Request Failed',
+        'data': null,
+        'message': errorMessage
+      };
+      return mapError;
+    }
   }
 }

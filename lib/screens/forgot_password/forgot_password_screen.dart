@@ -1,7 +1,13 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/auth_api.dart';
 import 'package:flutter_doorbell/screens/otp_input/otp_input_screen.dart';
-import 'package:flutter_doorbell/widgets/login/input_field.dart';
+import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
+import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
+
+bool isAnimating = true;
+
+enum ButtonState { init, submitting, completed }
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -11,6 +17,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final AuthApiClient authApiClient = AuthApiClient();
+  ButtonState state = ButtonState.init;
   List textfieldValues = [
     "", //email
   ];
@@ -22,6 +30,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool isEmail(String input) => EmailValidator.validate(input);
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = MediaQuery.of(context).size.width;
+    final isInit = isAnimating || state == ButtonState.init;
+    final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
@@ -80,42 +91,55 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               Container(
                 padding: const EdgeInsets.only(top: 3, left: 3),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    border: const Border(
-                      bottom: BorderSide(color: Colors.black),
-                      top: BorderSide(color: Colors.black),
-                      left: BorderSide(color: Colors.black),
-                      right: BorderSide(color: Colors.black),
-                    )),
-                child: MaterialButton(
-                  minWidth: double.infinity,
-                  height: 60,
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => const OTPInputScreen(),
-                    ));
-                  },
-                  color: const Color(0xff0095FF),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Text(
-                    "Send OTP",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    onEnd: () => setState(() {
+                          isAnimating = !isAnimating;
+                        }),
+                    width: state == ButtonState.init ? buttonWidth : 70,
+                    height: 60,
+                    child: isInit
+                        ? CustomRoundedButton(
+                            text: 'Login',
+                            onPressed: () {
+                              handleLogin();
+                            },
+                          )
+                        : CustomCircularProgress(
+                            done: isDone,
+                          )),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> handleLogin() async {
+    if (_emailKey.currentState!.validate()) {
+      setState(() {
+        state = ButtonState.submitting;
+      });
+      dynamic res = await authApiClient.forgotPassword(textfieldValues[0]);
+
+      if (res['error'] == null) {
+        setState(() {
+          state = ButtonState.completed;
+        });
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => const OTPInputScreen(),
+        ));
+      } else {
+        setState(() {
+          state = ButtonState.init;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: ${res['message']}'),
+          backgroundColor: Colors.red.shade300,
+        ));
+      }
+    }
   }
 
   Widget inputField(
