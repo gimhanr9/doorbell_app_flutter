@@ -7,7 +7,7 @@ import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
 
 bool isAnimating = true;
 
-enum ButtonState { init, submitting, completed }
+enum ButtonState { init, submitting, completed, error }
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -32,6 +32,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     final buttonWidth = MediaQuery.of(context).size.width;
     final isInit = isAnimating || state == ButtonState.init;
+    final isError = state == ButtonState.error;
     final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -100,12 +101,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     height: 60,
                     child: isInit
                         ? CustomRoundedButton(
-                            text: 'Login',
+                            enabled: true,
+                            text: 'Send OTP',
                             onPressed: () {
-                              handleLogin();
+                              handleForgotPassword();
                             },
                           )
                         : CustomCircularProgress(
+                            error: isError,
                             done: isDone,
                           )),
               ),
@@ -116,21 +119,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Future<void> handleLogin() async {
+  Future<void> handleForgotPassword() async {
     if (_emailKey.currentState!.validate()) {
       setState(() {
         state = ButtonState.submitting;
       });
-      dynamic res = await authApiClient.forgotPassword(textfieldValues[0]);
+      String email = textfieldValues[0];
+      dynamic res = await authApiClient.forgotPassword(email);
 
       if (res['error'] == null) {
         setState(() {
           state = ButtonState.completed;
         });
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => const OTPInputScreen(),
+          builder: (BuildContext context) => OTPInputScreen(
+            email: email,
+          ),
         ));
       } else {
+        setState(() {
+          state = ButtonState.error;
+        });
+        await Future.delayed(const Duration(seconds: 1));
         setState(() {
           state = ButtonState.init;
         });

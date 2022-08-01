@@ -27,16 +27,6 @@ class _VisitorScreenState extends State<VisitorScreen> {
         child: Stack(
           children: <Widget>[
             const SizedBox(
-              height: 10.0,
-            ),
-            TextButton(
-                child: const Text('Add Visitor'),
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => const AddVisitorScreen(),
-                  ));
-                }),
-            const SizedBox(
               height: 15.0,
             ),
             Column(
@@ -55,6 +45,16 @@ class _VisitorScreenState extends State<VisitorScreen> {
             ),
           ],
         ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (BuildContext context) => const AddVisitorScreen(),
+          ));
+        },
       ),
     );
   }

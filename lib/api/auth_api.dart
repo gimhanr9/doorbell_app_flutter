@@ -30,16 +30,13 @@ class AuthApiClient {
     }
   }
 
-  Future register(User user) async {
+  Future register(name, email, password) async {
     try {
       Response response = await _dio.post(
           '${dotenv.env['FLASK_API_URL']}/register',
           options: Options(contentType: Headers.jsonContentType),
-          data: jsonEncode({
-            'email': user.email,
-            'name': user.name,
-            'password': user.password
-          }));
+          data:
+              jsonEncode({'email': email, 'name': name, 'password': password}));
 
       Map<String, dynamic> map = json.decode(response.data);
 

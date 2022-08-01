@@ -1,6 +1,15 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/auth_api.dart';
+import 'package:flutter_doorbell/screens/home/home_screen.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
+import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
+import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+bool isAnimating = true;
+
+enum ButtonState { init, submitting, completed, error }
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -10,6 +19,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final AuthApiClient authApiClient = AuthApiClient();
+  ButtonState state = ButtonState.init;
   List textfieldValues = [
     "", //name
     "", //email
@@ -31,6 +42,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = MediaQuery.of(context).size.width;
+    final isInit = isAnimating || state == ButtonState.init;
+    final isError = state == ButtonState.error;
+    final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
@@ -59,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     height: 20,
                   ),
                   Text(
-                    "Create an account, It's free ",
+                    "Create an account",
                     style: TextStyle(fontSize: 15, color: Colors.grey[700]),
                   )
                 ],
@@ -105,10 +120,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     height: 10,
                   ),
                   inputField("Password", true, (password) {
-                    if (password.length < 8) {
+                    if (password.length < 6) {
                       setState(() {
                         errorPassword =
-                            "Password should consist of at least 8 characters";
+                            "Password should consist of at least 6 characters";
                       });
                       return '';
                     }
@@ -147,32 +162,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               Container(
                 padding: const EdgeInsets.only(top: 3, left: 3),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    border: const Border(
-                      bottom: BorderSide(color: Colors.black),
-                      top: BorderSide(color: Colors.black),
-                      left: BorderSide(color: Colors.black),
-                      right: BorderSide(color: Colors.black),
-                    )),
-                child: MaterialButton(
-                  minWidth: double.infinity,
-                  height: 60,
-                  onPressed: () {},
-                  color: const Color(0xff0095FF),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Text(
-                    "Sign up",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    onEnd: () => setState(() {
+                          isAnimating = !isAnimating;
+                        }),
+                    width: state == ButtonState.init ? buttonWidth : 70,
+                    height: 60,
+                    child: isInit
+                        ? CustomRoundedButton(
+                            enabled: true,
+                            text: 'Login',
+                            onPressed: () {
+                              handleRegister();
+                            },
+                          )
+                        : CustomCircularProgress(
+                            error: isError,
+                            done: isDone,
+                          )),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -202,6 +210,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> handleRegister() async {
+    if (_namekey.currentState!.validate() &&
+        _emailKey.currentState!.validate() &&
+        _passwordKey.currentState!.validate() &&
+        _confirmPasswordKey.currentState!.validate()) {
+      setState(() {
+        state = ButtonState.submitting;
+      });
+
+      dynamic res = await authApiClient.register(
+          textfieldValues[0], textfieldValues[1], textfieldValues[2]);
+
+      if (res['error'] == null) {
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        preferences.setString('userToken', res['data']);
+        setState(() {
+          state = ButtonState.completed;
+        });
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => const HomeScreen(),
+        ));
+      } else {
+        setState(() {
+          state = ButtonState.error;
+        });
+        await Future.delayed(const Duration(seconds: 1));
+        setState(() {
+          state = ButtonState.init;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: ${res['message']}'),
+          backgroundColor: Colors.red.shade300,
+        ));
+      }
+    }
   }
 
   Widget inputField(

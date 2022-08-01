@@ -1,21 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/auth_api.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/screens/reset_password/reset_password_screen.dart';
+import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
+import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
+bool isAnimating = true;
+
+enum ButtonState { init, submitting, completed, error }
+
 class OTPInputScreen extends StatefulWidget {
-  const OTPInputScreen({Key? key}) : super(key: key);
+  final String email;
+  const OTPInputScreen({Key? key, required this.email}) : super(key: key);
 
   @override
   State<OTPInputScreen> createState() => _OTPInputScreenState();
 }
 
 class _OTPInputScreenState extends State<OTPInputScreen> {
+  final AuthApiClient authApiClient = AuthApiClient();
+  ButtonState state = ButtonState.init;
   TextEditingController textEditingController = TextEditingController();
   String otpInput = "";
-  bool enableContinue = true; //TODO:make this false
+  bool enableContinue = false;
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = MediaQuery.of(context).size.width;
+    final isInit = isAnimating || state == ButtonState.init;
+    final isError = state == ButtonState.error;
+    final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
@@ -60,7 +74,7 @@ class _OTPInputScreenState extends State<OTPInputScreen> {
                       shape: PinCodeFieldShape.box,
                       borderRadius: BorderRadius.circular(5),
                       fieldHeight: 50,
-                      fieldWidth: 40,
+                      fieldWidth: 50,
                       activeFillColor: Colors.white,
                     ),
                     controller: textEditingController,
@@ -79,40 +93,25 @@ class _OTPInputScreenState extends State<OTPInputScreen> {
               ),
               Container(
                 padding: const EdgeInsets.only(top: 3, left: 3),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    border: const Border(
-                      bottom: BorderSide(color: Colors.black),
-                      top: BorderSide(color: Colors.black),
-                      left: BorderSide(color: Colors.black),
-                      right: BorderSide(color: Colors.black),
-                    )),
-                child: MaterialButton(
-                  minWidth: double.infinity,
-                  height: 60,
-                  onPressed: !enableContinue
-                      ? null
-                      : (() {
-                          Navigator.of(context)
-                              .pushReplacement(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                const ResetPasswordScreen(),
-                          ));
+                child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    onEnd: () => setState(() {
+                          isAnimating = !isAnimating;
                         }),
-                  color: const Color(0xff0095FF),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Text(
-                    "Continue",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                    width: state == ButtonState.init ? buttonWidth : 70,
+                    height: 60,
+                    child: isInit
+                        ? CustomRoundedButton(
+                            enabled: enableContinue,
+                            text: 'Continue',
+                            onPressed: () {
+                              handleCheckOTP();
+                            },
+                          )
+                        : CustomCircularProgress(
+                            error: isError,
+                            done: isDone,
+                          )),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -136,5 +135,34 @@ class _OTPInputScreenState extends State<OTPInputScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> handleCheckOTP() async {
+    setState(() {
+      state = ButtonState.submitting;
+    });
+    dynamic res = await authApiClient.checkOtp(widget.email, otpInput);
+
+    if (res['error'] == null) {
+      setState(() {
+        state = ButtonState.completed;
+      });
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (BuildContext context) =>
+            ResetPasswordScreen(email: widget.email),
+      ));
+    } else {
+      setState(() {
+        state = ButtonState.error;
+      });
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        state = ButtonState.init;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error: ${res['message']}'),
+        backgroundColor: Colors.red.shade300,
+      ));
+    }
   }
 }

@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 bool isAnimating = true;
 
-enum ButtonState { init, submitting, completed }
+enum ButtonState { init, submitting, completed, error }
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final buttonWidth = MediaQuery.of(context).size.width;
     final isInit = isAnimating || state == ButtonState.init;
+    final isError = state == ButtonState.error;
     final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -133,12 +134,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 60,
                         child: isInit
                             ? CustomRoundedButton(
+                                enabled: true,
                                 text: 'Login',
                                 onPressed: () {
                                   handleLogin();
                                 },
                               )
                             : CustomCircularProgress(
+                                error: isError,
                                 done: isDone,
                               )),
                   ),
@@ -169,7 +172,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text("Don't have an account?"),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
                             builder: (BuildContext context) =>
                                 const RegisterScreen(),
                           ));
@@ -213,6 +217,10 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (BuildContext context) => const HomeScreen(),
         ));
       } else {
+        setState(() {
+          state = ButtonState.error;
+        });
+        await Future.delayed(const Duration(seconds: 1));
         setState(() {
           state = ButtonState.init;
         });

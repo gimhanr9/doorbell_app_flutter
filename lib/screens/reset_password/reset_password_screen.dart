@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_doorbell/widgets/login/input_field.dart';
+import 'package:flutter_doorbell/api/auth_api.dart';
+import 'package:flutter_doorbell/screens/login/login_screen.dart';
+import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
+import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
+
+bool isAnimating = true;
+
+enum ButtonState { init, submitting, completed, error }
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({Key? key}) : super(key: key);
+  final String email;
+  const ResetPasswordScreen({Key? key, required this.email}) : super(key: key);
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+  final AuthApiClient authApiClient = AuthApiClient();
+  ButtonState state = ButtonState.init;
   List textfieldValues = [
     "", //password
     "", //confirmPassword
@@ -21,6 +31,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _confirmPasswordKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = MediaQuery.of(context).size.width;
+    final isInit = isAnimating || state == ButtonState.init;
+    final isError = state == ButtonState.error;
+    final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
@@ -57,10 +71,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               Column(
                 children: <Widget>[
                   inputField("Password", true, (password) {
-                    if (password.length < 8) {
+                    if (password.length < 6) {
                       setState(() {
                         errorPassword =
-                            "Password should consist of at least 8 characters";
+                            "Password should consist of at least 6 characters";
                       });
                       return '';
                     }
@@ -77,7 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     height: 10,
                   ),
                   inputField("Confirm Password", true, (cPassword) {
-                    if (cPassword != textfieldValues[2]) {
+                    if (cPassword != textfieldValues[0]) {
                       setState(() {
                         errorConfirmPassword = "Passwords do not match";
                       });
@@ -99,38 +113,63 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
               Container(
                 padding: const EdgeInsets.only(top: 3, left: 3),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    border: const Border(
-                      bottom: BorderSide(color: Colors.black),
-                      top: BorderSide(color: Colors.black),
-                      left: BorderSide(color: Colors.black),
-                      right: BorderSide(color: Colors.black),
-                    )),
-                child: MaterialButton(
-                  minWidth: double.infinity,
-                  height: 60,
-                  onPressed: () {},
-                  color: const Color(0xff0095FF),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Text(
-                    "Reset password",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    onEnd: () => setState(() {
+                          isAnimating = !isAnimating;
+                        }),
+                    width: state == ButtonState.init ? buttonWidth : 70,
+                    height: 60,
+                    child: isInit
+                        ? CustomRoundedButton(
+                            enabled: true,
+                            text: 'Login',
+                            onPressed: () {
+                              handleResetPassword();
+                            },
+                          )
+                        : CustomCircularProgress(
+                            error: isError,
+                            done: isDone,
+                          )),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> handleResetPassword() async {
+    if (_passwordKey.currentState!.validate() &&
+        _confirmPasswordKey.currentState!.validate()) {
+      setState(() {
+        state = ButtonState.submitting;
+      });
+      dynamic res =
+          await authApiClient.resetPassword(widget.email, textfieldValues[0]);
+
+      if (res['error'] == null) {
+        setState(() {
+          state = ButtonState.completed;
+        });
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => const LoginScreen(),
+        ));
+      } else {
+        setState(() {
+          state = ButtonState.error;
+        });
+        await Future.delayed(const Duration(seconds: 1));
+        setState(() {
+          state = ButtonState.init;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: ${res['message']}'),
+          backgroundColor: Colors.red.shade300,
+        ));
+      }
+    }
   }
 
   Widget inputField(

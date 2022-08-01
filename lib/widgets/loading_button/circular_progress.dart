@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
 
 class CustomCircularProgress extends StatelessWidget {
+  final bool error;
   final bool done;
-  const CustomCircularProgress({Key? key, required this.done})
+  const CustomCircularProgress(
+      {Key? key, required this.error, required this.done})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final color = done ? Colors.green : Colors.blue;
+    final color = error
+        ? Colors.red
+        : done
+            ? Colors.green
+            : Colors.blue;
     return Container(
       decoration: BoxDecoration(shape: BoxShape.circle, color: color),
       child: Center(
-        child: done
-            ? const Icon(Icons.done, size: 50, color: Colors.white)
-            : const CircularProgressIndicator(
-                color: Colors.white,
-              ),
+        child: error
+            ? const Icon(Icons.error_outline_rounded,
+                size: 50, color: Colors.white)
+            : done
+                ? const Icon(Icons.done, size: 50, color: Colors.white)
+                : const CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
       ),
     );
   }
