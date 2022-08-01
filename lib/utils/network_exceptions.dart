@@ -41,11 +41,11 @@ class DioExceptions implements Exception {
       case 400:
         return 'Bad request';
       case 401:
-        return 'Invalid credentials';
+        return 'Authentication failed';
       case 403:
         return 'Forbidden';
       case 404:
-        return 'Resource not found';
+        return 'Requested resource does not exist';
       case 409:
         return 'Email already exists';
       case 429:

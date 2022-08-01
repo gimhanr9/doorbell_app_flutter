@@ -81,7 +81,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.network(
-                savedVisitor.imageUrl,
+                savedVisitor.imageUrl!,
                 height: 30,
                 width: 30,
                 fit: BoxFit.cover,
@@ -90,7 +90,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
           ),
         ),
         title: Text(
-          savedVisitor.fname + " " + savedVisitor.lname,
+          savedVisitor.fname! + " " + savedVisitor.lname!,
           style:
               const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),

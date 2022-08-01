@@ -197,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.network(
-                'https://img.icons8.com/fluency/344/image.png',
+                activityLog.imageUrl!,
                 fit: BoxFit.cover,
               ),
             ],
@@ -216,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
               flex: 4,
               child: Padding(
                   padding: const EdgeInsets.only(left: 0.0),
-                  child: Text(activityLog.date,
+                  child: Text(activityLog.date!,
                       style: const TextStyle(color: Colors.black))),
             )
           ],
@@ -239,7 +239,7 @@ List getActivities() {
       name: "Tom",
       date: "29/06/2022",
       time: "10:59AM",
-      imageurl: "",
+      imageUrl: "https://img.icons8.com/fluency/344/image.png",
     )
   ];
 }

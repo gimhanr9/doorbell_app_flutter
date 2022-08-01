@@ -76,7 +76,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
           ),
         ),
         title: Text(
-          recording.name,
+          recording.name!,
           style:
               const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
@@ -88,7 +88,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
               flex: 4,
               child: Padding(
                   padding: const EdgeInsets.only(left: 0.0),
-                  child: Text(recording.date,
+                  child: Text(recording.date!,
                       style: const TextStyle(color: Colors.black))),
             )
           ],
@@ -100,7 +100,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      RecordingPlayer(recordingUrl: recording.url)));
+                      RecordingPlayer(recordingUrl: recording.url!)));
         },
       );
 }

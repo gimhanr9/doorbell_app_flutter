@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter_doorbell/models/user.dart';
 import 'package:flutter_doorbell/utils/network_exceptions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
