@@ -5,6 +5,7 @@ import 'package:flutter_doorbell/api/meeting_api.dart';
 import 'package:flutter_doorbell/models/activity_log.dart';
 import 'package:flutter_doorbell/models/meeting_details.dart';
 import 'package:flutter_doorbell/screens/live_streaming/live_streaming_screen.dart';
+import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/screens/profile/add_visitor_screen.dart';
 import 'package:flutter_doorbell/screens/profile/profile_screen.dart';
 import 'package:flutter_doorbell/screens/video_recording/recording_list_screen.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_doorbell/utils/color_file.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -109,11 +111,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.logout_rounded,
               ),
               title: const Text('Logout'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                // Navigator.of(context).pushReplacement(MaterialPageRoute(
-                //     builder: (BuildContext context) =>
-                //         const LoginScreen()));
+                SharedPreferences preferences =
+                    await SharedPreferences.getInstance();
+                preferences.remove('userToken');
+                OneSignal.shared.removeExternalUserId();
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => const LoginScreen()));
               },
             ),
           ],

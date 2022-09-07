@@ -29,7 +29,7 @@ class AuthApiClient {
     }
   }
 
-  Future register(name, email, password) async {
+  Future register(String name, String email, String password) async {
     try {
       Response response = await _dio.post(
           '${dotenv.env['FLASK_API_URL']}/register',

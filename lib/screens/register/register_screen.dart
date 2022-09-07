@@ -5,7 +5,10 @@ import 'package:flutter_doorbell/screens/home/home_screen.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
 import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 bool isAnimating = true;
 
@@ -32,6 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String errorName = "";
   String errorPassword = "";
   String errorConfirmPassword = "";
+  String deviceId = "";
 
   final _namekey = GlobalKey<FormState>();
   final _emailKey = GlobalKey<FormState>();
@@ -221,18 +225,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
         state = ButtonState.submitting;
       });
 
+      // await OneSignal.shared
+      //     .getDeviceState()
+      //     .then((value) => {deviceId = value!.userId;});
+
       dynamic res = await authApiClient.register(
           textfieldValues[0], textfieldValues[1], textfieldValues[2]);
 
       if (res['error'] == null) {
         SharedPreferences preferences = await SharedPreferences.getInstance();
         preferences.setString('userToken', res['data']);
-        setState(() {
-          state = ButtonState.completed;
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(res['data']);
+        OneSignal.shared.setExternalUserId(decodedToken['id']).then((results) {
+          setState(() {
+            state = ButtonState.completed;
+          });
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => const HomeScreen(),
+          ));
+        }).catchError((error) {
+          setState(() {
+            state = ButtonState.error;
+          });
+          Future.delayed(const Duration(seconds: 1), () {
+            setState(() {
+              state = ButtonState.init;
+            });
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text(
+                'Registration successful but could not create ID. Try logging in with the credentials.'),
+            backgroundColor: Colors.red.shade300,
+          ));
         });
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => const HomeScreen(),
-        ));
+        // setState(() {
+        //   state = ButtonState.completed;
+        // });
+        // Navigator.of(context).pushReplacement(MaterialPageRoute(
+        //   builder: (BuildContext context) => const HomeScreen(),
+        // ));
       } else {
         setState(() {
           state = ButtonState.error;
