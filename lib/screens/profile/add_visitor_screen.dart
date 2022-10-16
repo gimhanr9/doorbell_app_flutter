@@ -1,9 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_doorbell/api/profile_api.dart';
+import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/screens/profile/selection_dialog.dart';
 import 'package:flutter_doorbell/utils/color_file.dart';
+import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
+import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
+import 'package:flutter_doorbell/widgets/network_call_info.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddVisitorScreen extends StatefulWidget {
   const AddVisitorScreen({Key? key}) : super(key: key);
@@ -13,7 +19,13 @@ class AddVisitorScreen extends StatefulWidget {
 }
 
 class _AddVisitorScreenState extends State<AddVisitorScreen> {
+  final ProfileApiClient profileApiClient = ProfileApiClient();
+  bool isLoading = false;
+  bool isAuthenticated = true;
+  bool problem = false;
   File? visitorImage;
+  String error = "";
+  ButtonState state = ButtonState.init;
   List textfieldValues = [
     "", //fname
     "", //lname
@@ -27,6 +39,10 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = MediaQuery.of(context).size.width;
+    final isInit = isAnimating || state == ButtonState.init;
+    final isError = state == ButtonState.error;
+    final isDone = state == ButtonState.completed;
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -43,148 +59,221 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
             ),
           ),
         ),
-        body: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          height: MediaQuery.of(context).size.height - 50,
-          width: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              Column(
-                children: const <Widget>[
-                  Text(
-                    "Add Visitor",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                ],
-              ),
-              Stack(
-                children: <Widget>[
-                  Image.network(
-                    'https://img.icons8.com/fluency/344/image.png',
-                    height: 150,
-                    width: 150,
-                    fit: BoxFit.cover,
-                  ),
-                  Positioned(
-                      bottom: 1,
-                      right: 1,
-                      child: Container(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          onPressed: () {
-                            showDialog(
-                              barrierColor: Colors.black26,
-                              context: context,
-                              builder: (context) {
-                                return SelectionDialog(
-                                  selectCamera: () {
-                                    pickFromCamera();
-                                  },
-                                  selectGallery: () {
-                                    pickFromGallery();
-                                  },
-                                );
-                              },
-                            );
-                          },
-                          icon: const Icon(Icons.add_a_photo,
-                              color: Colors.white),
-                        ),
-                        decoration: const BoxDecoration(
-                            color: Colors.deepOrange,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                      ))
-                ],
-              ),
-              Column(
-                children: <Widget>[
-                  inputField("First Name", false, (fname) {
-                    if (fname.length == 0) {
-                      setState(() {
-                        errorFname = "Please enter a valid first name";
-                      });
-                      return '';
-                    }
-                    setState(() {
-                      errorFname = '';
-                    });
-                    return null;
-                  }, _fnamekey, 0),
-                  Text(
-                    errorFname != "" ? errorFname : "",
-                    style: const TextStyle(fontSize: 12, color: Colors.red),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  inputField("Last Name", false, (lname) {
-                    if (lname.length == 0) {
-                      setState(() {
-                        errorLname = "Please enter a valid first name";
-                      });
-                      return '';
-                    }
-                    setState(() {
-                      errorLname = '';
-                    });
-                    return null;
-                  }, _lnameKey, 1),
-                  Text(
-                    errorLname != "" ? errorLname : "",
-                    style: const TextStyle(fontSize: 12, color: Colors.red),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 3, left: 3),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
-                          border: const Border(
-                            bottom: BorderSide(color: Colors.black),
-                            top: BorderSide(color: Colors.black),
-                            left: BorderSide(color: Colors.black),
-                            right: BorderSide(color: Colors.black),
-                          )),
-                      child: MaterialButton(
-                        minWidth: double.infinity,
-                        height: 60,
-                        onPressed: () {},
-                        color: const Color(0xff0095FF),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: const Text(
+        body: problem == true
+            ? NetworkCallInfo(
+                error: error,
+                isLogin: isAuthenticated,
+                onPressed: () {
+                  sendToLogin();
+                },
+              )
+            : Container(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                height: MediaQuery.of(context).size.height - 50,
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Column(
+                      children: const <Widget>[
+                        Text(
                           "Add Visitor",
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                ],
-              ),
-            ],
-          ),
+                    Stack(
+                      children: <Widget>[
+                        visitorImage != null
+                            ? Image.file(
+                                File(visitorImage!.path),
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.asset(
+                                'assets/images/upload_image.png',
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              ),
+                        Positioned(
+                            bottom: 1,
+                            right: 1,
+                            child: Container(
+                              height: 40,
+                              width: 40,
+                              child: IconButton(
+                                onPressed: () {
+                                  showDialog(
+                                    barrierColor: Colors.black26,
+                                    context: context,
+                                    builder: (context) {
+                                      return SelectionDialog(
+                                        selectCamera: () {
+                                          pickFromCamera();
+                                        },
+                                        selectGallery: () {
+                                          pickFromGallery();
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                icon: const Icon(Icons.add_a_photo,
+                                    color: Colors.white),
+                              ),
+                              decoration: const BoxDecoration(
+                                  color: Colors.deepOrange,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20))),
+                            ))
+                      ],
+                    ),
+                    Column(
+                      children: <Widget>[
+                        inputField("First Name", false, (fname) {
+                          if (fname.length == 0) {
+                            setState(() {
+                              errorFname = "Please enter a valid first name";
+                            });
+                            return '';
+                          }
+                          setState(() {
+                            errorFname = '';
+                          });
+                          return null;
+                        }, _fnamekey, 0),
+                        Text(
+                          errorFname != "" ? errorFname : "",
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.red),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        inputField("Last Name", false, (lname) {
+                          if (lname.length == 0) {
+                            setState(() {
+                              errorLname = "Please enter a valid first name";
+                            });
+                            return '';
+                          }
+                          setState(() {
+                            errorLname = '';
+                          });
+                          return null;
+                        }, _lnameKey, 1),
+                        Text(
+                          errorLname != "" ? errorLname : "",
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.red),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.only(top: 3, left: 3),
+                          child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              onEnd: () => setState(() {
+                                    isAnimating = !isAnimating;
+                                  }),
+                              width:
+                                  state == ButtonState.init ? buttonWidth : 70,
+                              height: 60,
+                              child: isInit
+                                  ? CustomRoundedButton(
+                                      enabled: true,
+                                      text: 'Add Visitor',
+                                      onPressed: () {
+                                        addVisitor();
+                                      },
+                                    )
+                                  : CustomCircularProgress(
+                                      error: isError,
+                                      done: isDone,
+                                    )),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ));
+  }
+
+  void sendToLogin() {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (BuildContext context) => const LoginScreen(),
+    ));
+  }
+
+  Future<void> addVisitor() async {
+    if (_fnamekey.currentState!.validate() &&
+        _lnameKey.currentState!.validate()) {
+      if (visitorImage != null) {
+        setState(() {
+          state = ButtonState.submitting;
+        });
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        String? token = preferences.getString('userToken');
+        token ??= "";
+        dynamic res = await profileApiClient.addVisitor(
+            token, visitorImage!, textfieldValues[0], textfieldValues[1]);
+
+        if (res['error'] == null) {
+          setState(() {
+            state = ButtonState.completed;
+          });
+          Future.delayed(const Duration(seconds: 1), () {
+            setState(() {
+              state = ButtonState.init;
+              textfieldValues[0] = "";
+              textfieldValues[1] = "";
+            });
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Visitor added successfully'),
+            backgroundColor: Colors.green.shade400,
+          ));
+        } else {
+          setState(() {
+            state = ButtonState.error;
+          });
+          Future.delayed(const Duration(seconds: 1), () {
+            setState(() {
+              state = ButtonState.init;
+            });
+          });
+          if (res['message'] == "Authentication failed") {
+            setState(() {
+              problem = true;
+              error = res['message'];
+              isAuthenticated = false;
+            });
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Error: ${res['message']}'),
+              backgroundColor: Colors.red.shade300,
+            ));
+          }
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Please pick an image of the visitor'),
+          backgroundColor: Colors.red.shade300,
         ));
+      }
+    }
   }
 
   Widget inputField(
@@ -231,7 +320,10 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
       final imageTemp = File(image.path);
       setState(() => visitorImage = imageTemp);
     } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Error: Failed to pick image'),
+        backgroundColor: Colors.red.shade300,
+      ));
     }
   }
 
@@ -242,7 +334,10 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
       final imageTemp = File(image.path);
       setState(() => visitorImage = imageTemp);
     } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Error: Failed to pick image'),
+        backgroundColor: Colors.red.shade300,
+      ));
     }
   }
 }

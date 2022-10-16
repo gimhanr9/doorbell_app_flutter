@@ -1,15 +1,16 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/home_api.dart';
 import 'package:flutter_doorbell/api/meeting_api.dart';
 import 'package:flutter_doorbell/models/activity_log.dart';
 import 'package:flutter_doorbell/models/meeting_details.dart';
 import 'package:flutter_doorbell/screens/live_streaming/live_streaming_screen.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
-import 'package:flutter_doorbell/screens/profile/add_visitor_screen.dart';
 import 'package:flutter_doorbell/screens/profile/profile_screen.dart';
 import 'package:flutter_doorbell/screens/video_recording/recording_list_screen.dart';
 import 'package:flutter_doorbell/utils/color_file.dart';
+import 'package:flutter_doorbell/widgets/loaders/circular_loader.dart';
+import 'package:flutter_doorbell/widgets/network_call_info.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -24,12 +25,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final HomeApiClient homeApiClient = HomeApiClient();
   late List activities;
+  int numberOfActivities = 0;
+  bool isLoading = false;
+  bool isAuthenticated = true;
+  bool noData = false;
+  bool problem = false;
+  String error = "";
+  String username = "";
+  String email = "";
 
   @override
   void initState() {
-    activities = getActivities();
     super.initState();
+    getActivityLog();
   }
 
   @override
@@ -45,21 +55,21 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const UserAccountsDrawerHeader(
-              decoration: BoxDecoration(color: Color(0xff764abc)),
+            UserAccountsDrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xff764abc)),
               accountName: Text(
-                "Gimhan",
-                style: TextStyle(
+                username,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               accountEmail: Text(
-                "gimhanr9@gmail.com",
-                style: TextStyle(
+                email,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              currentAccountPicture: FlutterLogo(),
+              currentAccountPicture: const FlutterLogo(),
             ),
             ListTile(
               leading: const Icon(
@@ -78,8 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) =>
-                        const AddVisitorScreen()));
+                    builder: (BuildContext context) => const ProfileScreen()));
               },
             ),
             ListTile(
@@ -124,46 +133,121 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: double.infinity,
-        child: Column(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                const SizedBox(
-                  height: 8,
-                ),
-                const Text(
-                  "Hi Gimhan,",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                const Text(
-                  "You've had 27 visits",
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                ),
-                const SizedBox(
-                  height: 12,
-                ),
-                Container(
-                  child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: activities.length,
-                    itemBuilder: (context, index) {
-                      return makeCard(activities[index]);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      body: isLoading == true
+          ? Center(
+              child: CircularLoader(
+                radius: 20.0,
+                dotRadius: 5.0,
+              ),
+            )
+          : problem == true
+              ? NetworkCallInfo(
+                  error: error,
+                  isLogin: isAuthenticated,
+                  onPressed: () {
+                    sendToLogin();
+                  },
+                )
+              : noData == true
+                  ? const NetworkCallInfo(
+                      error: "No data available to display!", isLogin: false)
+                  : SizedBox(
+                      height: MediaQuery.of(context).size.height,
+                      width: double.infinity,
+                      child: Column(
+                        children: <Widget>[
+                          Column(
+                            children: <Widget>[
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Text(
+                                "Hi $username,",
+                                style: const TextStyle(
+                                    fontSize: 30, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Text(
+                                "You've had $numberOfActivities visits",
+                                style: const TextStyle(
+                                    fontSize: 18, color: Colors.black),
+                              ),
+                              const SizedBox(
+                                height: 12,
+                              ),
+                              Container(
+                                child: ListView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  shrinkWrap: true,
+                                  itemCount: activities.length,
+                                  itemBuilder: (context, index) {
+                                    return makeCard(activities[index]);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
     );
+  }
+
+  void processData(Iterable list, userDetails) {
+    List activityLog;
+    activityLog = list.map((model) => ActivityLog.fromJson(model)).toList();
+    setState(() {
+      numberOfActivities = activities.length;
+      activities = activityLog;
+      isLoading = false;
+      username = userDetails['name'];
+      email = userDetails['email'];
+    });
+  }
+
+  Future<void> getActivityLog() async {
+    setState(() {
+      isLoading = true;
+    });
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? token = preferences.getString('userToken');
+    token ??= "";
+    dynamic res = await homeApiClient.getActivityLog(token);
+
+    if (res['error'] == null) {
+      final response = json.decode(res['body']);
+      Iterable list = response['activities'];
+      final userDetails = response['userDetails'];
+      processData(list, userDetails);
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      if (res['message'] == "Authentication failed") {
+        setState(() {
+          problem = true;
+          error = res['message'];
+          isAuthenticated = false;
+        });
+      } else {
+        setState(() {
+          problem = true;
+          error = res['message'];
+        });
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //   content: Text('Error: ${res['message']}'),
+        //   backgroundColor: Colors.red.shade300,
+        // ));
+      }
+    }
+  }
+
+  void sendToLogin() {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (BuildContext context) => const LoginScreen(),
+    ));
   }
 
   void validateMeeting(String meetingId) async {
@@ -236,15 +320,4 @@ class _HomeScreenState extends State<HomeScreen> {
           //             RecordingPlayer(recordingUrl: recording.url)));
         },
       );
-}
-
-List getActivities() {
-  return [
-    ActivityLog(
-      name: "Tom",
-      date: "29/06/2022",
-      time: "10:59AM",
-      imageUrl: "https://img.icons8.com/fluency/344/image.png",
-    )
-  ];
 }

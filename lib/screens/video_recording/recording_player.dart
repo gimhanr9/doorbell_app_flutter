@@ -43,6 +43,7 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
   void _createChewieController() {
     _chewieController = ChewieController(
       videoPlayerController: _videoPlayerController,
+      aspectRatio: 9 / 20,
       autoPlay: true,
       looping: true,
       progressIndicatorDelay:

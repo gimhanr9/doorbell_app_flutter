@@ -1,7 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/recording_api.dart';
 import 'package:flutter_doorbell/models/recording.dart';
+import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/screens/video_recording/recording_player.dart';
 import 'package:flutter_doorbell/utils/color_file.dart';
+import 'package:flutter_doorbell/widgets/loaders/circular_loader.dart';
+import 'package:flutter_doorbell/widgets/network_call_info.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecordingListScreen extends StatefulWidget {
   const RecordingListScreen({Key? key}) : super(key: key);
@@ -11,12 +17,18 @@ class RecordingListScreen extends StatefulWidget {
 }
 
 class _RecordingListScreenState extends State<RecordingListScreen> {
+  final RecordingApiClient recordingApiClient = RecordingApiClient();
   late List recordings;
+  bool isLoading = false;
+  bool isAuthenticated = true;
+  bool noData = false;
+  bool problem = false;
+  String error = "";
 
   @override
   void initState() {
-    recordings = getLessons();
     super.initState();
+    getRecordings();
   }
 
   @override
@@ -37,17 +49,85 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
           ),
         ),
       ),
-      body: Container(
-        child: ListView.builder(
-          scrollDirection: Axis.vertical,
-          shrinkWrap: true,
-          itemCount: recordings.length,
-          itemBuilder: (context, index) {
-            return makeCard(recordings[index]);
-          },
-        ),
-      ),
+      body: isLoading == true
+          ? Center(
+              child: CircularLoader(
+                radius: 20.0,
+                dotRadius: 5.0,
+              ),
+            )
+          : problem == true
+              ? NetworkCallInfo(
+                  error: error,
+                  isLogin: isAuthenticated,
+                  onPressed: () {
+                    sendToLogin();
+                  },
+                )
+              : noData == true
+                  ? const NetworkCallInfo(
+                      error: "No data available to display!", isLogin: false)
+                  : Container(
+                      child: ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: recordings.length,
+                        itemBuilder: (context, index) {
+                          return makeCard(recordings[index]);
+                        },
+                      ),
+                    ),
     );
+  }
+
+  void processData(Iterable list) {
+    List recordingList;
+    recordingList = list.map((model) => Recording.fromJson(model)).toList();
+    setState(() {
+      recordings = recordingList;
+      isLoading = false;
+    });
+  }
+
+  Future<void> getRecordings() async {
+    setState(() {
+      isLoading = true;
+    });
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? token = preferences.getString('userToken');
+    token ??= "";
+    dynamic res = await recordingApiClient.getRecordings(token);
+
+    if (res['error'] == null) {
+      Iterable list = json.decode(res['body']);
+      processData(list);
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      if (res['message'] == "Authentication failed") {
+        setState(() {
+          problem = true;
+          error = res['message'];
+          isAuthenticated = false;
+        });
+      } else {
+        setState(() {
+          problem = true;
+          error = res['message'];
+        });
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //   content: Text('Error: ${res['message']}'),
+        //   backgroundColor: Colors.red.shade300,
+        // ));
+      }
+    }
+  }
+
+  void sendToLogin() {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (BuildContext context) => const LoginScreen(),
+    ));
   }
 
   Card makeCard(Recording recording) => Card(
@@ -93,8 +173,6 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
             )
           ],
         ),
-        trailing: const Icon(Icons.more_vert_rounded,
-            color: Colors.black, size: 30.0),
         onTap: () {
           Navigator.push(
               context,
@@ -103,15 +181,4 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
                       RecordingPlayer(recordingUrl: recording.url!)));
         },
       );
-}
-
-List getLessons() {
-  return [
-    Recording(
-      id: "1",
-      name: "Sample Video",
-      date: "29/06/2022",
-      url: "https://www.youtube.com/watch?v=tXVNS-V39A0",
-    )
-  ];
 }

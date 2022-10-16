@@ -1,17 +1,30 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/profile_api.dart';
+import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/utils/color_file.dart';
+import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
+import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
+import 'package:flutter_doorbell/widgets/network_call_info.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditDetailsScreen extends StatefulWidget {
-  final String? name;
-  final String? email;
-  const EditDetailsScreen({Key? key, this.name, this.email}) : super(key: key);
+  final String name;
+  final String email;
+  const EditDetailsScreen({Key? key, required this.name, required this.email})
+      : super(key: key);
 
   @override
   State<EditDetailsScreen> createState() => _EditDetailsScreenState();
 }
 
 class _EditDetailsScreenState extends State<EditDetailsScreen> {
+  final ProfileApiClient profileApiClient = ProfileApiClient();
+  bool isLoading = false;
+  bool isAuthenticated = true;
+  bool problem = false;
+  String error = "";
+  ButtonState state = ButtonState.init;
   List textfieldValues = [
     "", //name
     "", //email
@@ -27,6 +40,10 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final buttonWidth = MediaQuery.of(context).size.width;
+    final isInit = isAnimating || state == ButtonState.init;
+    final isError = state == ButtonState.error;
+    final isDone = state == ButtonState.completed;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -44,129 +61,165 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          height: MediaQuery.of(context).size.height - 50,
-          width: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              Column(
-                children: const <Widget>[
-                  Text(
-                    "Edit your details",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+      body: problem == true
+          ? NetworkCallInfo(
+              error: error,
+              isLogin: isAuthenticated,
+              onPressed: () {
+                sendToLogin();
+              },
+            )
+          : SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                height: MediaQuery.of(context).size.height - 50,
+                width: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Column(
+                      children: const <Widget>[
+                        Text(
+                          "Edit your details",
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                ],
-              ),
-              Column(
-                children: <Widget>[
-                  inputField("Name", widget.name, false, (name) {
-                    if (name.length == 0) {
-                      setState(() {
-                        errorName = "Please enter a valid name";
-                      });
-                      return '';
-                    }
-                    setState(() {
-                      errorName = '';
-                    });
-                    return null;
-                  }, _namekey, 0),
-                  Text(
-                    errorName != "" ? errorName : "",
-                    style: const TextStyle(fontSize: 12, color: Colors.red),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  inputField("Email", widget.email, false, (email) {
-                    if (!isEmail(email)) {
-                      setState(() {
-                        errorEmail = "Please enter a valid email";
-                      });
-                      return '';
-                    }
-                    setState(() {
-                      errorEmail = '';
-                    });
-                    return null;
-                  }, _emailKey, 1),
-                  Text(
-                    errorEmail != "" ? errorEmail : "",
-                    style: const TextStyle(fontSize: 12, color: Colors.red),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                ],
-              ),
-              Container(
-                  padding: const EdgeInsets.only(top: 3, left: 3),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      border: const Border(
-                        bottom: BorderSide(color: Colors.black),
-                        top: BorderSide(color: Colors.black),
-                        left: BorderSide(color: Colors.black),
-                        right: BorderSide(color: Colors.black),
-                      )),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: MaterialButton(
-                          minWidth: double.infinity,
-                          height: 60,
-                          onPressed: () {},
-                          color: const Color(0xff0095FF),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
+                    Column(
+                      children: <Widget>[
+                        inputField("Name", widget.name, false, (name) {
+                          if (name.length == 0) {
+                            setState(() {
+                              errorName = "Please enter a valid name";
+                            });
+                            return '';
+                          }
+                          setState(() {
+                            errorName = '';
+                          });
+                          return null;
+                        }, _namekey, 0),
+                        Text(
+                          errorName != "" ? errorName : "",
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.red),
                         ),
-                      ),
-                      Expanded(
-                        child: MaterialButton(
-                          minWidth: double.infinity,
-                          height: 60,
-                          onPressed: () {},
-                          color: const Color(0xff0095FF),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child: const Text(
-                            "Save",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
+                        const SizedBox(
+                          height: 10,
                         ),
-                      )
-                    ],
-                  )),
-            ],
-          ),
-        ),
-      ),
+                        inputField("Email", widget.email, false, (email) {
+                          if (!isEmail(email)) {
+                            setState(() {
+                              errorEmail = "Please enter a valid email";
+                            });
+                            return '';
+                          }
+                          setState(() {
+                            errorEmail = '';
+                          });
+                          return null;
+                        }, _emailKey, 1),
+                        Text(
+                          errorEmail != "" ? errorEmail : "",
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.red),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.only(top: 3, left: 3),
+                      child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          onEnd: () => setState(() {
+                                isAnimating = !isAnimating;
+                              }),
+                          width: state == ButtonState.init ? buttonWidth : 70,
+                          height: 60,
+                          child: isInit
+                              ? CustomRoundedButton(
+                                  enabled: true,
+                                  text: 'Save',
+                                  onPressed: () {
+                                    addVisitor();
+                                  },
+                                )
+                              : CustomCircularProgress(
+                                  error: isError,
+                                  done: isDone,
+                                )),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
+  }
+
+  void sendToLogin() {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (BuildContext context) => const LoginScreen(),
+    ));
+  }
+
+  Future<void> addVisitor() async {
+    if (_namekey.currentState!.validate() &&
+        _emailKey.currentState!.validate()) {
+      setState(() {
+        state = ButtonState.submitting;
+      });
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      String? token = preferences.getString('userToken');
+      token ??= "";
+      dynamic res = await profileApiClient.editProfile(
+          token, textfieldValues[0], textfieldValues[1]);
+
+      if (res['error'] == null) {
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        preferences.setString('userToken', res['data']);
+        setState(() {
+          state = ButtonState.completed;
+        });
+        Future.delayed(const Duration(seconds: 1), () {
+          setState(() {
+            state = ButtonState.init;
+          });
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Changes saved successfully'),
+          backgroundColor: Colors.green.shade400,
+        ));
+      } else {
+        setState(() {
+          state = ButtonState.error;
+        });
+        Future.delayed(const Duration(seconds: 1), () {
+          setState(() {
+            state = ButtonState.init;
+          });
+        });
+        if (res['message'] == "Authentication failed") {
+          setState(() {
+            problem = true;
+            error = res['message'];
+            isAuthenticated = false;
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Error: ${res['message']}'),
+            backgroundColor: Colors.red.shade300,
+          ));
+        }
+      }
+    }
   }
 
   Widget inputField(label, initialValue, obscureText,

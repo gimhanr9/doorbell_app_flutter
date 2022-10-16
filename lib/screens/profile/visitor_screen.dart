@@ -1,6 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_doorbell/api/profile_api.dart';
 import 'package:flutter_doorbell/models/saved_visitor.dart';
+import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/screens/profile/add_visitor_screen.dart';
+import 'package:flutter_doorbell/screens/profile/edit_visitor_screen.dart';
+import 'package:flutter_doorbell/widgets/loaders/circular_loader.dart';
+import 'package:flutter_doorbell/widgets/network_call_info.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VisitorScreen extends StatefulWidget {
   const VisitorScreen({Key? key}) : super(key: key);
@@ -10,42 +17,66 @@ class VisitorScreen extends StatefulWidget {
 }
 
 class _VisitorScreenState extends State<VisitorScreen> {
+  final ProfileApiClient profileApiClient = ProfileApiClient();
   late List visitors;
+  bool isLoading = false;
+  bool isAuthenticated = true;
+  bool noData = false;
+  bool problem = false;
+  String error = "";
 
   @override
   void initState() {
-    visitors = getSavedVisitors();
     super.initState();
+    getVisitors();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: double.infinity,
-        child: Stack(
-          children: <Widget>[
-            const SizedBox(
-              height: 15.0,
-            ),
-            Column(
-              children: <Widget>[
-                Expanded(
-                  child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: visitors.length,
-                    itemBuilder: (context, index) {
-                      return makeCard(visitors[index]);
-                    },
-                  ),
+      body: isLoading == true
+          ? Center(
+              child: CircularLoader(
+                radius: 20.0,
+                dotRadius: 5.0,
+              ),
+            )
+          : problem == true
+              ? NetworkCallInfo(
+                  error: error,
+                  isLogin: isAuthenticated,
+                  onPressed: () {
+                    sendToLogin();
+                  },
                 )
-              ],
-            ),
-          ],
-        ),
-      ),
+              : noData == true
+                  ? const NetworkCallInfo(
+                      error: "No data available to display!", isLogin: false)
+                  : SizedBox(
+                      height: MediaQuery.of(context).size.height,
+                      width: double.infinity,
+                      child: Stack(
+                        children: <Widget>[
+                          const SizedBox(
+                            height: 15.0,
+                          ),
+                          Column(
+                            children: <Widget>[
+                              Expanded(
+                                child: ListView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  shrinkWrap: true,
+                                  itemCount: visitors.length,
+                                  itemBuilder: (context, index) {
+                                    return makeCard(visitors[index]);
+                                  },
+                                ),
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
@@ -57,6 +88,90 @@ class _VisitorScreenState extends State<VisitorScreen> {
         },
       ),
     );
+  }
+
+  void processData(Iterable list) {
+    List savedVisitors;
+    savedVisitors = list.map((model) => SavedVisitor.fromJson(model)).toList();
+    setState(() {
+      visitors = savedVisitors;
+      isLoading = false;
+    });
+  }
+
+  Future<void> getVisitors() async {
+    if (isLoading == false) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? token = preferences.getString('userToken');
+    token ??= "";
+    dynamic res = await profileApiClient.getVisitors(token);
+
+    if (res['error'] == null) {
+      Iterable list = json.decode(res['body']);
+      processData(list);
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      if (res['message'] == "Authentication failed") {
+        setState(() {
+          problem = true;
+          error = res['message'];
+          isAuthenticated = false;
+        });
+      } else {
+        setState(() {
+          problem = true;
+          error = res['message'];
+        });
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //   content: Text('Error: ${res['message']}'),
+        //   backgroundColor: Colors.red.shade300,
+        // ));
+      }
+    }
+  }
+
+  Future<void> deleteVisitor(String visitorId, String imageUrl) async {
+    setState(() {
+      isLoading = true;
+    });
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? token = preferences.getString('userToken');
+    token ??= "";
+    dynamic res =
+        await profileApiClient.deleteVisitor(token, visitorId, imageUrl);
+
+    if (res['error'] == null) {
+      getVisitors();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Visitor deleted successfully'),
+        backgroundColor: Colors.green.shade400,
+      ));
+    } else {
+      if (res['message'] == "Authentication failed") {
+        setState(() {
+          problem = true;
+          error = res['message'];
+          isAuthenticated = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error: ${res['message']}'),
+          backgroundColor: Colors.red.shade300,
+        ));
+      }
+    }
+  }
+
+  void sendToLogin() {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (BuildContext context) => const LoginScreen(),
+    ));
   }
 
   Card makeCard(SavedVisitor savedVisitor) => Card(
@@ -94,25 +209,31 @@ class _VisitorScreenState extends State<VisitorScreen> {
           style:
               const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        trailing: const Icon(Icons.more_vert_rounded,
-            color: Colors.black, size: 30.0),
-        onTap: () {
-          // Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //         builder: (context) =>
-          //             RecordingPlayer(recordingUrl: recording.url)));
-        },
+        trailing: PopupMenuButton(
+          itemBuilder: (context) {
+            return [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Text('Edit'),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete'),
+              )
+            ];
+          },
+          onSelected: (String value) {
+            if (value == 'edit') {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => EditVisitorScreen(
+                        fname: savedVisitor.fname!,
+                        lname: savedVisitor.lname!,
+                        imageUrl: savedVisitor.imageUrl!,
+                      )));
+            } else if (value == 'delete') {
+              deleteVisitor(savedVisitor.id!, savedVisitor.imageUrl!);
+            }
+          },
+        ),
       );
-}
-
-List getSavedVisitors() {
-  return [
-    SavedVisitor(
-      fname: "Sam",
-      lname: "Curran",
-      imageUrl:
-          "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8MTB8fHxlbnwwfHx8fA%3D%3D&w=1000&q=80",
-    )
-  ];
 }
