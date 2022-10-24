@@ -23,6 +23,8 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
   @override
   void initState() {
     super.initState();
+    print("Helllllsdfsodffsdfooooooooooooooooooooooooooooooooooooooooooooo");
+    print(widget.recordingUrl);
     initializePlayer();
   }
 
@@ -35,30 +37,38 @@ class _RecordingPlayerState extends State<RecordingPlayer> {
 
   Future<void> initializePlayer() async {
     _videoPlayerController = VideoPlayerController.network(widget.recordingUrl);
-    await Future.wait([_videoPlayerController.initialize()]);
+    await _videoPlayerController.initialize();
     _createChewieController();
-    setState(() {});
+    //setState(() {});
   }
 
   void _createChewieController() {
     _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController,
-      aspectRatio: 9 / 20,
-      autoPlay: true,
-      looping: true,
-      progressIndicatorDelay:
-          bufferDelay != null ? Duration(milliseconds: bufferDelay!) : null,
-      // additionalOptions: (context) {
-      //   return <OptionItem>[
-      //     OptionItem(
-      //       onTap: toggleVideo,
-      //       iconData: Icons.live_tv_sharp,
-      //       title: 'Toggle Video Src',
-      //     ),
-      //   ];
-      // },
-      hideControlsTimer: const Duration(seconds: 1),
-    );
+        videoPlayerController: _videoPlayerController,
+        aspectRatio: 16 / 9,
+        autoInitialize: true,
+        autoPlay: true,
+        looping: true,
+        progressIndicatorDelay:
+            bufferDelay != null ? Duration(milliseconds: bufferDelay!) : null,
+        // additionalOptions: (context) {
+        //   return <OptionItem>[
+        //     OptionItem(
+        //       onTap: toggleVideo,
+        //       iconData: Icons.live_tv_sharp,
+        //       title: 'Toggle Video Src',
+        //     ),
+        //   ];
+        // },
+        hideControlsTimer: const Duration(seconds: 1),
+        errorBuilder: (context, errorMessage) {
+          return Center(
+            child: Text(
+              errorMessage,
+              style: const TextStyle(color: Colors.white),
+            ),
+          );
+        });
   }
 
   int currPlayIndex = 0;

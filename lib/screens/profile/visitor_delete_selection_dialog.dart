@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class VisitorDeleteSelectionDialog extends StatefulWidget {
-  final Function() selectCamera;
-  final Function() selectGallery;
+  final Function() selectYes;
+  final Function() selectNo;
   final String visitorName;
   const VisitorDeleteSelectionDialog(
       {Key? key,
-      required this.selectCamera,
-      required this.selectGallery,
+      required this.selectYes,
+      required this.selectNo,
       required this.visitorName})
       : super(key: key);
 
@@ -51,7 +51,7 @@ class _VisitorDeleteSelectionDialogState
             child: InkWell(
               highlightColor: Colors.grey[200],
               onTap: () {
-                widget.selectCamera();
+                widget.selectYes();
                 Navigator.pop(context);
               },
               child: Center(
@@ -75,7 +75,7 @@ class _VisitorDeleteSelectionDialogState
             child: InkWell(
               highlightColor: Colors.grey[200],
               onTap: () {
-                widget.selectGallery();
+                widget.selectNo();
                 Navigator.pop(context);
               },
               child: Center(

@@ -5,6 +5,8 @@ import 'package:flutter_doorbell/models/saved_visitor.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/screens/profile/add_visitor_screen.dart';
 import 'package:flutter_doorbell/screens/profile/edit_visitor_screen.dart';
+import 'package:flutter_doorbell/screens/profile/visitor_delete_selection_dialog.dart';
+import 'package:flutter_doorbell/screens/profile/visitor_details_screen.dart';
 import 'package:flutter_doorbell/widgets/loaders/circular_loader.dart';
 import 'package:flutter_doorbell/widgets/network_call_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -231,9 +233,33 @@ class _VisitorScreenState extends State<VisitorScreen> {
                         imageUrl: savedVisitor.imageUrl!,
                       )));
             } else if (value == 'delete') {
-              deleteVisitor(savedVisitor.id!, savedVisitor.imageUrl!);
+              showDialog(
+                barrierColor: Colors.black26,
+                context: context,
+                builder: (context) {
+                  return VisitorDeleteSelectionDialog(
+                    selectYes: () {
+                      deleteVisitor(savedVisitor.id!, savedVisitor.imageUrl!);
+                    },
+                    selectNo: () {},
+                    visitorName:
+                        savedVisitor.fname! + " " + savedVisitor.lname!,
+                  );
+                },
+              );
             }
           },
         ),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => VisitorDetailsScreen(
+                        fname: savedVisitor.fname!,
+                        lname: savedVisitor.lname!,
+                        imageUrl: savedVisitor.imageUrl!,
+                        id: savedVisitor.id!,
+                      )));
+        },
       );
 }

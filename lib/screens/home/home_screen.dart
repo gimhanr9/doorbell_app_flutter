@@ -219,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (res['error'] == null) {
       final response = json.decode(res['body']);
       Iterable list = response['activities'];
-      final userDetails = response['userDetails'];
+      final userDetails = response['user_details'];
       processData(list, userDetails);
     } else {
       setState(() {
@@ -305,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
               flex: 4,
               child: Padding(
                   padding: const EdgeInsets.only(left: 0.0),
-                  child: Text(activityLog.date!,
+                  child: Text(activityLog.time! + " " + activityLog.date!,
                       style: const TextStyle(color: Colors.black))),
             )
           ],

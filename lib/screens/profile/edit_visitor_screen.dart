@@ -235,8 +235,8 @@ class _EditVisitorScreenState extends State<EditVisitorScreen> {
         SharedPreferences preferences = await SharedPreferences.getInstance();
         String? token = preferences.getString('userToken');
         token ??= "";
-        dynamic res = await profileApiClient.addVisitor(
-            token, visitorImage!, textfieldValues[0], textfieldValues[1]);
+        dynamic res = await profileApiClient.editVisitor(token, visitorImage!,
+            widget.imageUrl, textfieldValues[0], textfieldValues[1]);
 
         if (res['error'] == null) {
           setState(() {

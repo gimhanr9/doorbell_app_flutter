@@ -162,17 +162,17 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
         ),
         // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
 
-        subtitle: Row(
-          children: <Widget>[
-            Expanded(
-              flex: 4,
-              child: Padding(
-                  padding: const EdgeInsets.only(left: 0.0),
-                  child: Text(recording.date!,
-                      style: const TextStyle(color: Colors.black))),
-            )
-          ],
-        ),
+        // subtitle: Row(
+        //   children: <Widget>[
+        //     Expanded(
+        //       flex: 4,
+        //       child: Padding(
+        //           padding: const EdgeInsets.only(left: 0.0),
+        //           child: Text(recording.date!,
+        //               style: const TextStyle(color: Colors.black))),
+        //     )
+        //   ],
+        // ),
         onTap: () {
           Navigator.push(
               context,

@@ -79,8 +79,8 @@ class ProfileApiClient {
     }
   }
 
-  Future<Response> editVisitor(
-      String token, File imageFile, String fname, String lname) async {
+  Future<Response> editVisitor(String token, File imageFile, String previousUrl,
+      String fname, String lname) async {
     try {
       String fileName = imageFile.path.split('/').last;
       String? mimeType = mime(fileName);
@@ -92,6 +92,7 @@ class ProfileApiClient {
           filename: fileName,
           contentType: MediaType(mimee, type),
         ),
+        'image_url': previousUrl,
         'fname': fname,
         'lname': lname
       });

@@ -149,7 +149,7 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
                                   enabled: true,
                                   text: 'Save',
                                   onPressed: () {
-                                    addVisitor();
+                                    editDetails();
                                   },
                                 )
                               : CustomCircularProgress(
@@ -170,7 +170,7 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
     ));
   }
 
-  Future<void> addVisitor() async {
+  Future<void> editDetails() async {
     if (_namekey.currentState!.validate() &&
         _emailKey.currentState!.validate()) {
       setState(() {
