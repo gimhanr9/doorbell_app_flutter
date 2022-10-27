@@ -1,21 +1,16 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/api/home_api.dart';
-import 'package:flutter_doorbell/api/meeting_api.dart';
 import 'package:flutter_doorbell/models/activity_log.dart';
-import 'package:flutter_doorbell/models/meeting_details.dart';
-import 'package:flutter_doorbell/screens/live_streaming/live_streaming_screen.dart';
+import 'package:flutter_doorbell/screens/home/activity_details_screen.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
 import 'package:flutter_doorbell/screens/profile/profile_screen.dart';
 import 'package:flutter_doorbell/screens/video_recording/recording_list_screen.dart';
 import 'package:flutter_doorbell/utils/color_file.dart';
 import 'package:flutter_doorbell/widgets/loaders/circular_loader.dart';
 import 'package:flutter_doorbell/widgets/network_call_info.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -96,11 +91,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.cell_tower_rounded,
               ),
               title: const Text('Live'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) =>
-                        const LiveStreamingScreen()));
+              onTap: () async {
+                const url = 'https://blog.logrocket.com';
+                if (await canLaunchUrlString(url)) {
+                  await launchUrlString(url);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: const Text(
+                        'Cannot open the live streamer. Please try again later.'),
+                    backgroundColor: Colors.red.shade300,
+                  ));
+                }
               },
             ),
             ListTile(
@@ -150,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               : noData == true
                   ? const NetworkCallInfo(
-                      error: "No data available to display!", isLogin: false)
+                      error: "No data available to display!", isLogin: true)
                   : SizedBox(
                       height: MediaQuery.of(context).size.height,
                       width: double.infinity,
@@ -217,10 +218,29 @@ class _HomeScreenState extends State<HomeScreen> {
     dynamic res = await homeApiClient.getActivityLog(token);
 
     if (res['error'] == null) {
-      final response = json.decode(res['body']);
-      Iterable list = response['activities'];
+      final response = res['data'];
       final userDetails = response['user_details'];
-      processData(list, userDetails);
+      if (res['data']['activities'].isNotEmpty) {
+        List list = response['activities'];
+        // processData(list);
+        setState(() {
+          activities = list;
+          isLoading = false;
+          numberOfActivities = list.length;
+          username = userDetails['name'];
+          email = userDetails['email'];
+        });
+      } else {
+        setState(() {
+          noData = true;
+          isLoading = false;
+          numberOfActivities = 0;
+          username = userDetails['name'];
+          email = userDetails['email'];
+        });
+      }
+
+      //processData(list, userDetails);
     } else {
       setState(() {
         isLoading = false;
@@ -250,22 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ));
   }
 
-  void validateMeeting(String meetingId) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    final token = preferences.getString("userToken");
-
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(token!);
-    try {
-      Response response =
-          await joinMeeting(dotenv.env['MEETING_ID'] ?? 'f34569-324567');
-      var data = json.decode(response.body);
-      final meetingDetails = MeetingDetail.fromJson(data["data"]);
-    } catch (err) {
-      var snackBar = const SnackBar(content: Text('Invalid meeting Id'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
-  }
-
   Card makeCard(ActivityLog activityLog) => Card(
         elevation: 1.0,
         margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
@@ -293,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         title: Text(
-          activityLog.name ?? "Not Recognized",
+          activityLog.name!,
           style:
               const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
@@ -313,11 +317,15 @@ class _HomeScreenState extends State<HomeScreen> {
         trailing: const Icon(Icons.more_vert_rounded,
             color: Colors.black, size: 30.0),
         onTap: () {
-          // Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //         builder: (context) =>
-          //             RecordingPlayer(recordingUrl: recording.url)));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ActivityDetails(
+                        name: activityLog.name!,
+                        date: activityLog.date!,
+                        time: activityLog.time!,
+                        imageUrl: activityLog.imageUrl!,
+                      )));
         },
       );
 }

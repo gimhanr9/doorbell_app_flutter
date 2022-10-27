@@ -53,6 +53,7 @@ dependencies:
   http_parser: ^4.0.1
   mime_type: ^1.0.0
   onesignal_flutter: ^3.4.1
+  url_launcher: ^6.1.6
 
 dev_dependencies:
   flutter_test:

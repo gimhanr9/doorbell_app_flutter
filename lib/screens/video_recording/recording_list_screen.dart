@@ -66,7 +66,7 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
                 )
               : noData == true
                   ? const NetworkCallInfo(
-                      error: "No data available to display!", isLogin: false)
+                      error: "No data available to display!", isLogin: true)
                   : Container(
                       child: ListView.builder(
                         scrollDirection: Axis.vertical,
@@ -80,14 +80,14 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
     );
   }
 
-  void processData(Iterable list) {
-    List recordingList;
-    recordingList = list.map((model) => Recording.fromJson(model)).toList();
-    setState(() {
-      recordings = recordingList;
-      isLoading = false;
-    });
-  }
+  // void processData(List list) {
+  //   List recordingList;
+  //   recordingList = list.map((model) => Recording.fromJson(model)).toList();
+  //   setState(() {
+  //     recordings = recordingList;
+  //     isLoading = false;
+  //   });
+  // }
 
   Future<void> getRecordings() async {
     setState(() {
@@ -99,8 +99,19 @@ class _RecordingListScreenState extends State<RecordingListScreen> {
     dynamic res = await recordingApiClient.getRecordings(token);
 
     if (res['error'] == null) {
-      Iterable list = json.decode(res['body']);
-      processData(list);
+      if (res['data'].isNotEmpty) {
+        List list = res['data'];
+        // processData(list);
+        setState(() {
+          recordings = list;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          noData = true;
+          isLoading = false;
+        });
+      }
     } else {
       setState(() {
         isLoading = false;

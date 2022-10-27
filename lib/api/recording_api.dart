@@ -4,10 +4,10 @@ import 'package:dio/dio.dart';
 final Dio _dio = Dio();
 
 class RecordingApiClient {
-  Future<Response> getRecordings(String token) async {
+  Future getRecordings(String token) async {
     try {
       Response response = await _dio.get(
-          '${dotenv.env['FLASK_API_URL']}/getprofile',
+          '${dotenv.env['FLASK_API_URL']}/getrecordings',
           options: Options(
               headers: {'Authorization': token},
               contentType: Headers.jsonContentType));

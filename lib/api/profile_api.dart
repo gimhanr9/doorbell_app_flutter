@@ -9,7 +9,7 @@ import 'package:mime_type/mime_type.dart';
 class ProfileApiClient {
   final Dio _dio = Dio();
 
-  Future<Response> getProfile(String token) async {
+  Future getProfile(String token) async {
     try {
       Response response = await _dio.get(
           '${dotenv.env['FLASK_API_URL']}/getprofile',
@@ -23,7 +23,7 @@ class ProfileApiClient {
     }
   }
 
-  Future<Response> getVisitors(String token) async {
+  Future getVisitors(String token) async {
     try {
       Response response = await _dio.get(
           '${dotenv.env['FLASK_API_URL']}/getvisitors',
@@ -37,7 +37,7 @@ class ProfileApiClient {
     }
   }
 
-  Future<Response> editProfile(String token, String name, String email) async {
+  Future editProfile(String token, String name, String email) async {
     try {
       Response response = await _dio.post(
           '${dotenv.env['FLASK_API_URL']}/editprofile',
@@ -46,13 +46,15 @@ class ProfileApiClient {
               contentType: Headers.jsonContentType),
           data: jsonEncode({'email': email, 'name': name}));
 
-      return response.data;
+      Map<String, dynamic> map = {'data': response.data['data']};
+
+      return map;
     } on DioError catch (e) {
       return e.response!.data;
     }
   }
 
-  Future<Response> addVisitor(
+  Future addVisitor(
       String token, File imageFile, String fname, String lname) async {
     try {
       String fileName = imageFile.path.split('/').last;
@@ -60,7 +62,7 @@ class ProfileApiClient {
       String mimee = mimeType!.split('/')[0];
       String type = mimeType.split('/')[1];
       FormData data = FormData.fromMap({
-        "image": await MultipartFile.fromFile(
+        "file": await MultipartFile.fromFile(
           imageFile.path,
           filename: fileName,
           contentType: MediaType(mimee, type),
@@ -79,7 +81,7 @@ class ProfileApiClient {
     }
   }
 
-  Future<Response> editVisitor(String token, File imageFile, String previousUrl,
+  Future editVisitor(String token, File imageFile, String previousUrl,
       String fname, String lname) async {
     try {
       String fileName = imageFile.path.split('/').last;
@@ -107,8 +109,7 @@ class ProfileApiClient {
     }
   }
 
-  Future<Response> deleteVisitor(
-      String token, String visitorId, String imageUrl) async {
+  Future deleteVisitor(String token, String visitorId, String imageUrl) async {
     try {
       Response response = await _dio.post(
           '${dotenv.env['FLASK_API_URL']}/deletevisitor',

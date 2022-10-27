@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/api/profile_api.dart';
 import 'package:flutter_doorbell/models/saved_visitor.dart';
@@ -53,7 +52,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
                 )
               : noData == true
                   ? const NetworkCallInfo(
-                      error: "No data available to display!", isLogin: false)
+                      error: "No data available to display!", isLogin: true)
                   : SizedBox(
                       height: MediaQuery.of(context).size.height,
                       width: double.infinity,
@@ -102,38 +101,52 @@ class _VisitorScreenState extends State<VisitorScreen> {
   }
 
   Future<void> getVisitors() async {
-    if (isLoading == false) {
-      setState(() {
-        isLoading = true;
-      });
-    }
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? token = preferences.getString('userToken');
-    token ??= "";
-    dynamic res = await profileApiClient.getVisitors(token);
-
-    if (res['error'] == null) {
-      Iterable list = json.decode(res['body']);
-      processData(list);
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      if (res['message'] == "Authentication failed") {
+    if (mounted) {
+      if (isLoading == false) {
         setState(() {
-          problem = true;
-          error = res['message'];
-          isAuthenticated = false;
+          isLoading = true;
         });
+      }
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      String? token = preferences.getString('userToken');
+      token ??= "";
+      dynamic res = await profileApiClient.getVisitors(token);
+
+      if (res['error'] == null) {
+        //processData(list);
+        if (res['data'].isNotEmpty) {
+          List list = res['data'];
+          // processData(list);
+          setState(() {
+            visitors = list;
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            noData = true;
+            isLoading = false;
+          });
+        }
       } else {
         setState(() {
-          problem = true;
-          error = res['message'];
+          isLoading = false;
         });
-        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        //   content: Text('Error: ${res['message']}'),
-        //   backgroundColor: Colors.red.shade300,
-        // ));
+        if (res['message'] == "Authentication failed") {
+          setState(() {
+            problem = true;
+            error = res['message'];
+            isAuthenticated = false;
+          });
+        } else {
+          setState(() {
+            problem = true;
+            error = res['message'];
+          });
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          //   content: Text('Error: ${res['message']}'),
+          //   backgroundColor: Colors.red.shade300,
+          // ));
+        }
       }
     }
   }

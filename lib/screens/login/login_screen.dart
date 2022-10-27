@@ -8,6 +8,7 @@ import 'package:flutter_doorbell/widgets/loading_button/circular_progress.dart';
 import 'package:flutter_doorbell/widgets/loading_button/rounded_button.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 bool isAnimating = true;
@@ -212,14 +213,33 @@ class _LoginScreenState extends State<LoginScreen> {
       if (res['error'] == null) {
         SharedPreferences preferences = await SharedPreferences.getInstance();
         preferences.setString('userToken', res['data']);
-        Map<String, dynamic> decodedToken = JwtDecoder.decode(res['data']);
-        OneSignal.shared.setExternalUserId(decodedToken['id']).then((results) {
-          setState(() {
-            state = ButtonState.completed;
-          });
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => const HomeScreen(),
-          ));
+
+        await OneSignal.shared.getDeviceState().then((value) async {
+          dynamic resu = await authApiClient.updateOneSignal(
+              textfieldValues[0], value!.userId!);
+          if (resu['error'] == null) {
+            setState(() {
+              state = ButtonState.completed;
+            });
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => const HomeScreen(),
+            ));
+          } else {
+            setState(() {
+              state = ButtonState.error;
+            });
+            Future.delayed(const Duration(seconds: 1), () {
+              setState(() {
+                state = ButtonState.init;
+              });
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text(
+                  'Login successful but could not create ID. Try logging in again.'),
+              backgroundColor: Colors.red.shade300,
+            ));
+          }
         }).catchError((error) {
           setState(() {
             state = ButtonState.error;
@@ -232,10 +252,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: const Text(
-                'Valid credentials but could not create ID. Try logging in again.'),
+                'Login successful but could not create ID. Try logging in again.'),
             backgroundColor: Colors.red.shade300,
           ));
         });
+
+        // await OneSignal.shared
+        //     .setExternalUserId(decodedToken['id'])
+        //     .then((results) {
+        //   setState(() {
+        //     state = ButtonState.completed;
+        //   });
+        //   Navigator.of(context).pushReplacement(MaterialPageRoute(
+        //     builder: (BuildContext context) => const HomeScreen(),
+        //   ));
+        // }).catchError((error) {
+        //   setState(() {
+        //     state = ButtonState.error;
+        //   });
+        //   Future.delayed(const Duration(seconds: 1), () {
+        //     setState(() {
+        //       state = ButtonState.init;
+        //     });
+        //   });
+
+        //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //     content: const Text(
+        //         'Valid credentials but could not create ID. Try logging in again.'),
+        //     backgroundColor: Colors.red.shade300,
+        //   ));
+        // });
       } else {
         setState(() {
           state = ButtonState.error;

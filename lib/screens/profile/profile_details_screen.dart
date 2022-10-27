@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_doorbell/api/profile_api.dart';
 import 'package:flutter_doorbell/screens/login/login_screen.dart';
@@ -25,6 +24,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   String error = "";
   String userName = "";
   String userEmail = "";
+  ButtonState state = ButtonState.init;
 
   @override
   void initState() {
@@ -82,12 +82,18 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                         ],
                                       ),
                                     ),
-                                    CustomRoundedButton(
-                                        enabled: true,
-                                        text: "Edit",
-                                        onPressed: () {
-                                          sendToEdit();
-                                        }),
+                                    Container(
+                                      padding: const EdgeInsets.only(
+                                          top: 3, left: 3),
+                                      width: 200,
+                                      height: 60,
+                                      child: CustomRoundedButton(
+                                          enabled: true,
+                                          text: "Edit",
+                                          onPressed: () {
+                                            sendToEdit();
+                                          }),
+                                    )
                                   ],
                                 ),
                               ),
@@ -127,8 +133,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     dynamic res = await profileApiClient.getProfile(token);
 
     if (res['error'] == null) {
-      Map<String, dynamic> user = json.decode(res['body']);
+      Map<String, dynamic> user = res['data'];
       setState(() {
+        isLoading = false;
         userName = user['name'];
         userEmail = user['email'];
       });

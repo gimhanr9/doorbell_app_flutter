@@ -185,6 +185,7 @@ class _EditDetailsScreenState extends State<EditDetailsScreen> {
       if (res['error'] == null) {
         SharedPreferences preferences = await SharedPreferences.getInstance();
         preferences.setString('userToken', res['data']);
+
         setState(() {
           state = ButtonState.completed;
         });

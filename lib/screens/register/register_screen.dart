@@ -176,7 +176,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: isInit
                         ? CustomRoundedButton(
                             enabled: true,
-                            text: 'Login',
+                            text: 'Register',
                             onPressed: () {
                               handleRegister();
                             },
@@ -235,14 +235,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (res['error'] == null) {
         SharedPreferences preferences = await SharedPreferences.getInstance();
         preferences.setString('userToken', res['data']);
-        Map<String, dynamic> decodedToken = JwtDecoder.decode(res['data']);
-        OneSignal.shared.setExternalUserId(decodedToken['id']).then((results) {
-          setState(() {
-            state = ButtonState.completed;
-          });
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => const HomeScreen(),
-          ));
+        await OneSignal.shared.getDeviceState().then((value) async {
+          dynamic resu = await authApiClient.updateOneSignal(
+              textfieldValues[1], value!.userId!);
+          if (resu['error'] == null) {
+            setState(() {
+              state = ButtonState.completed;
+            });
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => const HomeScreen(),
+            ));
+          } else {
+            setState(() {
+              state = ButtonState.error;
+            });
+            Future.delayed(const Duration(seconds: 1), () {
+              setState(() {
+                state = ButtonState.init;
+              });
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text(
+                  'Registration successful but could not create ID. Try logging in with the credentials.'),
+              backgroundColor: Colors.red.shade300,
+            ));
+          }
         }).catchError((error) {
           setState(() {
             state = ButtonState.error;
@@ -259,6 +277,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
             backgroundColor: Colors.red.shade300,
           ));
         });
+        // await OneSignal.shared
+        //     .setExternalUserId(decodedToken['id'])
+        //     .then((results) {
+        //   setState(() {
+        //     state = ButtonState.completed;
+        //   });
+        //   Navigator.of(context).pushReplacement(MaterialPageRoute(
+        //     builder: (BuildContext context) => const HomeScreen(),
+        //   ));
+        // }).catchError((error) {
+        //   setState(() {
+        //     state = ButtonState.error;
+        //   });
+        //   Future.delayed(const Duration(seconds: 1), () {
+        //     setState(() {
+        //       state = ButtonState.init;
+        //     });
+        //   });
+
+        //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //     content: const Text(
+        //         'Registration successful but could not create ID. Try logging in with the credentials.'),
+        //     backgroundColor: Colors.red.shade300,
+        //   ));
+        // });
         // setState(() {
         //   state = ButtonState.completed;
         // });
